@@ -10,7 +10,7 @@ import { useSounds } from "@/components/shared/sound-provider";
 import type { RawCommit } from "@/lib/git/types";
 import type { TimelineEvent } from "@/lib/timeline/types";
 
-const DEMO_REPO_PATTERN = /github\.com\/helloluma\/edwardguillen/;
+// Demo mode disabled — always run real pipeline
 
 type Phase = "extracting" | "analyzing" | "transitioning" | "complete";
 
@@ -46,24 +46,17 @@ function AnalyzePage() {
   const loadDemo = useCallback(async () => {
     setPhase("analyzing");
 
-    // Start simulation and fetch cached data in parallel
-    const [, demoRes] = await Promise.all([
-      simulateDemo(),
-      fetch("/api/demo").then((r) => r.json()) as Promise<{ timeline: TimelineEvent[] }>,
-    ]);
-
+    // Fetch cached data first, then run simulation
+    const demoRes = await (fetch("/api/demo").then((r) => r.json()) as Promise<{ timeline: TimelineEvent[] }>);
     setDemoTimeline(demoRes.timeline);
+
+    // Now run the visual simulation (ends with setIsComplete(true))
+    await simulateDemo();
   }, [simulateDemo]);
 
   const extract = useCallback(async () => {
     if (!repo) {
       setExtractError("No repository URL provided. Add ?repo= to the URL.");
-      return;
-    }
-
-    // Use pre-cached data for the demo repo
-    if (DEMO_REPO_PATTERN.test(repo)) {
-      loadDemo();
       return;
     }
 
@@ -82,6 +75,13 @@ function AnalyzePage() {
       }
 
       const { commits } = (await res.json()) as { commits: RawCommit[] };
+
+      if (commits.length < 5) {
+        throw new Error(
+          `This repo only has ${commits.length} commit${commits.length === 1 ? "" : "s"}. Git Historian needs at least 5 commits to build a meaningful timeline.`
+        );
+      }
+
       setPhase("analyzing");
       startAnalysis(commits);
     } catch (err: unknown) {
@@ -117,7 +117,11 @@ function AnalyzePage() {
     if (phase !== "complete") return;
 
     const data = timelineData ?? demoTimeline;
-    if (!data) return;
+    if (!data || data.length === 0) {
+      setExtractError("Analysis completed but couldn't generate timeline events. Try a repo with more history.");
+      setPhase("extracting");
+      return;
+    }
 
     // Store timeline data for the timeline page to pick up
     try {

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { StaggeringText } from "@/components/shared/staggering-text";
@@ -36,6 +36,12 @@ export default function LandingPage() {
   const { playPop, playSnap } = useSounds();
   const [repoUrl, setRepoUrl] = useState("");
   const [isNavigating, setIsNavigating] = useState(false);
+  const [headlineRevealed, setHeadlineRevealed] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setHeadlineRevealed(true), 400);
+    return () => clearTimeout(timer);
+  }, []);
 
   function handleAnalyze(url?: string) {
     const targetUrl = url || repoUrl;
@@ -69,7 +75,7 @@ export default function LandingPage() {
           transition={{ duration: 0.6, ease: [0.23, 0.88, 0.26, 0.92] }}
         >
           <div className="flex justify-center mb-6">
-            <StaggeringText className="text-48 max-sm:text-32 [&>span]:inline-block -tracking-[1px] font-medium text-[color:var(--color-high-contrast)]">
+            <StaggeringText hover={headlineRevealed} className="text-48 max-sm:text-32 [&>span]:inline-block -tracking-[1px] font-medium text-[color:var(--color-high-contrast)]">
               Every codebase has a story.
             </StaggeringText>
           </div>
@@ -103,28 +109,18 @@ export default function LandingPage() {
               aria-label="GitHub repository URL"
               disabled={isNavigating}
             />
-            <Button
+            <motion.button
               onClick={() => handleAnalyze()}
               disabled={!repoUrl.trim() || isNavigating}
-              className="h-11 px-6 bg-[color:var(--color-orange)] hover:bg-[color:var(--color-orange-bg2)] text-white font-medium"
+              className="h-11 px-6 bg-[color:var(--color-accent)] text-white font-medium rounded-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ type: "spring", stiffness: 400, damping: 25 }}
             >
               Analyze
-            </Button>
+            </motion.button>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.7, duration: 0.4 }}
-          >
-            <button
-              onClick={handleDemo}
-              disabled={isNavigating}
-              className="text-14 text-[color:var(--color-orange)] hover:underline underline-offset-4 disabled:opacity-50"
-            >
-              Try Demo &rarr;
-            </button>
-          </motion.div>
         </motion.div>
 
         {/* Steps */}
@@ -142,7 +138,7 @@ export default function LandingPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1 + index * 0.1, duration: 0.4 }}
             >
-              <span className="text-12 font-mono text-[color:var(--color-orange)] mb-2 block">
+              <span className="text-12 font-mono text-[color:var(--color-accent)] mb-2 block">
                 {step.number}
               </span>
               <h3 className="text-18 font-medium text-[color:var(--color-high-contrast)] mb-1">
@@ -157,7 +153,7 @@ export default function LandingPage() {
       </main>
 
       {/* Footer */}
-      <footer className="px-6 py-8 border-t border-[color:var(--color-gray3)]">
+      <footer className="px-6 py-8">
         <div className="max-w-3xl mx-auto text-center">
           <p className="text-12 text-[color:var(--color-gray9)] leading-20 mb-3">
             Built by{" "}
@@ -172,7 +168,16 @@ export default function LandingPage() {
             for the &ldquo;Built with Opus 4.6&rdquo; Claude Code Hackathon
           </p>
           <p className="text-12 text-[color:var(--color-gray9)] leading-20">
-            Radial timeline designed with{" "}
+            Radial timeline by{" "}
+            <a
+              href="https://devouringdetails.com"
+              className="text-[color:var(--color-gray11)] hover:text-[color:var(--color-high-contrast)]"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Rauno Freiberg
+            </a>
+            ,{" "}
             <a
               href="https://glenn.me/"
               className="text-[color:var(--color-gray11)] hover:text-[color:var(--color-high-contrast)]"

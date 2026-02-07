@@ -19,7 +19,7 @@
 }
 
 ::selection {
-  background: var(--color-orange);
+  background: var(--color-accent);
   color: white;
 }
 
@@ -89,14 +89,11 @@
     0px 8px 16px -4px rgba(0, 0, 0, 0.04),
     0px 24px 32px -8px rgba(0, 0, 0, 0.06);
 
-  /* Brand colors */
-  --color-orange: #ff4d00;
-  --color-red: #ff2b43;
-  --color-orange-bg: #ff4d0010;
-  --color-orange-bg2: #ff4d0095;
-  --color-orange-bg3: #ff4d0018;
-  --color-yellow: #ffd335;
-  --color-blue: #0070f3;
+  /* Brand colors (teal accent) */
+  --color-accent: oklch(0.72 0.15 195);
+  --color-accent-bg: oklch(0.72 0.15 195 / 6%);
+  --color-accent-bg2: oklch(0.72 0.15 195 / 58%);
+  --color-accent-bg3: oklch(0.72 0.15 195 / 10%);
 
   /* Gray scale */
   --color-high-contrast: #000;
@@ -122,7 +119,7 @@
   --color-agent-narrator: hsl(151, 55%, 41.5%);
 
   /* Focus */
-  --color-focus: var(--color-orange);
+  --color-focus: var(--color-accent);
 
   /* Motion */
   --animate-blink: blink 1.2s ease infinite;

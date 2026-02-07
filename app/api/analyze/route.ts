@@ -4,6 +4,8 @@ import { AnalysisEvent } from "@/lib/ai/types";
 import { runPipeline } from "@/lib/ai/pipeline";
 
 export async function POST(request: NextRequest) {
+  console.log("[analyze] ANTHROPIC_API_KEY set:", !!process.env.ANTHROPIC_API_KEY);
+
   try {
     const { commits } = (await request.json()) as { commits: RawCommit[] };
 

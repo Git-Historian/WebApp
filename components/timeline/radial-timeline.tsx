@@ -206,6 +206,17 @@ export default function RadialTimeline({ data }: { data: TimelineEvent[] }) {
   React.useEffect(() => {
     window.history.scrollRestoration = "manual";
     document.documentElement.scrollTo(0, 0);
+
+    // Auto-zoom to first item on mount
+    const timer = setTimeout(() => {
+      if (data.length > 0) {
+        document.documentElement.scrollTop = SCROLL_SNAP;
+        scale.set(SCALE_ZOOM);
+        rotateToIndex(0);
+      }
+    }, 600);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   React.useEffect(() => {
@@ -248,7 +259,7 @@ export default function RadialTimeline({ data }: { data: TimelineEvent[] }) {
       <TimelineCtx.Provider value={context}>
         <div className="fixed translate-center">
           <motion.div
-            className="absolute origin-[50%_7vh] translate-center [--highlight-color:var(--color-orange)]"
+            className="absolute origin-[50%_7vh] translate-center [--highlight-color:var(--color-accent)]"
             style={{
               width: constants.SIZE,
               height: constants.SIZE,

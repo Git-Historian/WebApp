@@ -39,7 +39,7 @@ npm run build   # Production build
 
 - **Next.js 15** — App Router, TypeScript, Tailwind v4
 - **Claude Opus 4.6** — Four-agent analysis pipeline via Anthropic SDK
-- **motion** (Framer Motion) — Spring-based animations and gestures
+- **[Motion](https://motion.dev)** — Spring-based animations and gestures
 - **Web Audio API** — 7 synthesized sound types (zero audio files)
 - **simple-git** — Blobless clone and commit extraction
 - **shadcn/ui** — Base component primitives
@@ -48,6 +48,6 @@ npm run build   # Production build
 
 Built by [Edward Guillen](https://edwardguillen.com) for the "Built with Opus 4.6" Claude Code Hackathon.
 
-Radial timeline originally designed in collaboration with [Glenn Hitchcock](https://glenn.me/) and [Andy Allen](https://x.com/asallen), published on [devouringdetails.com](https://devouringdetails.com).
+Radial timeline by [Rauno Freiberg](https://devouringdetails.com), [Glenn Hitchcock](https://glenn.me/), and [Andy Allen](https://x.com/asallen).
 
 Audio design methodology referenced from [Raphael Salaja](https://www.userinterface.wiki/).

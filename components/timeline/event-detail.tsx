@@ -52,7 +52,7 @@ export function EventDetail({ event }: { event: TimelineEvent }) {
               className="flex flex-col gap-1 border-l-2 border-[color:var(--color-gray4)] pl-3"
             >
               <div className="flex items-center gap-2">
-                <code className="text-12 font-mono text-[color:var(--color-orange)]">
+                <code className="text-12 font-mono text-[color:var(--color-accent)]">
                   {commit.hash.slice(0, 7)}
                 </code>
                 <span className="text-12 text-[color:var(--color-gray9)]">
