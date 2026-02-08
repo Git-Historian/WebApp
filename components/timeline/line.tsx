@@ -64,6 +64,10 @@ export function Line({
       data-variant={variant}
       data-active={active}
       data-hovered={hovered || active}
+      {...(isInteractive && currentItem && {
+        "aria-label": `${currentItem.name}, ${currentItem.year}`,
+        "aria-current": active ? ("true" as const) : undefined,
+      })}
       style={{
         rotate: rotation,
         x: RADIUS + offsetX + LINE_WIDTH_LARGE,

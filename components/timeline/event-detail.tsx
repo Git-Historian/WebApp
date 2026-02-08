@@ -105,7 +105,7 @@ export function EventDetail({ event }: { event: TimelineEvent }) {
 
       {/* Architecture note */}
       {event.architectureNote && (
-        <div className="border border-[color:var(--color-gray4)] rounded-8 p-4">
+        <div className="border border-[color:var(--color-gray4)] rounded-8 p-4" role="region" aria-label="Architecture note">
           <span className="text-12 text-[color:var(--color-gray9)] uppercase tracking-wider font-medium">
             Architecture
           </span>
@@ -121,13 +121,20 @@ export function EventDetail({ event }: { event: TimelineEvent }) {
           </span>
           {(totalInsertions > 0 || totalDeletions > 0) && (
             <>
-              <span className="font-mono text-[color:var(--color-green9)]">
+              <span className="font-mono text-[color:var(--color-green9)]" aria-label={`${totalInsertions} insertions`}>
                 +{totalInsertions}
               </span>
-              <span className="font-mono text-[color:var(--color-red9)]">
+              <span className="font-mono text-[color:var(--color-red9)]" aria-label={`${totalDeletions} deletions`}>
                 -{totalDeletions}
               </span>
-              <div className="flex h-1.5 flex-1 max-w-[120px] rounded-full overflow-hidden">
+              <div
+                className="flex h-1.5 flex-1 max-w-[120px] rounded-full overflow-hidden"
+                role="progressbar"
+                aria-label={`${totalInsertions} insertions, ${totalDeletions} deletions`}
+                aria-valuenow={totalInsertions}
+                aria-valuemin={0}
+                aria-valuemax={totalInsertions + totalDeletions}
+              >
                 <div
                   className="bg-[color:var(--color-green9)]"
                   style={{

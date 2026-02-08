@@ -273,8 +273,15 @@ export default function RadialTimeline({ data }: { data: TimelineEvent[] }) {
     rotate.set(newRotate);
   }
 
+  // Screen reader announcement for active event
+  const activeEvent = activeIndex !== null ? data[activeIndex] : null;
+
   return (
-    <main className="w-full h-full overflow-hidden">
+    <main className="w-full h-full overflow-hidden" aria-label="Radial timeline">
+      {/* Live region for screen reader announcements */}
+      <div className="sr-only" aria-live="polite" aria-atomic="true">
+        {activeEvent ? `Viewing: ${activeEvent.name}, ${activeEvent.year}` : ""}
+      </div>
       <TimelineCtx.Provider value={context}>
         <div className="fixed translate-center">
           <motion.div
