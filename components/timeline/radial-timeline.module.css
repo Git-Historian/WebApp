@@ -14,9 +14,6 @@
 
     [data-slot="meta"] {
       opacity: 1 !important;
-      outline: 2px solid var(--highlight-color);
-      outline-offset: 4px;
-      border-radius: 6px;
     }
   }
 

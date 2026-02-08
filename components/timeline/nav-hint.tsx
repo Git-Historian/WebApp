@@ -22,60 +22,61 @@ export function NavHint() {
       onMouseEnter={() => setOpen(true)}
       onMouseLeave={() => setOpen(false)}
     >
-      <AnimatePresence mode="wait">
-        {!open ? (
-          <motion.button
-            key="pill"
-            className="flex items-center gap-2 rounded-full border border-[color:var(--color-gray4)] bg-[color:var(--color-gray2)] px-4 py-2 cursor-pointer"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={() => setOpen(true)}
+      <motion.div
+        className="overflow-hidden rounded-full border border-[color:var(--color-gray4)] bg-[color:var(--color-gray2)] cursor-pointer shadow-[var(--shadow-medium)]"
+        animate={{
+          borderRadius: open ? 12 : 9999,
+        }}
+        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+        onClick={() => setOpen((v) => !v)}
+      >
+        <motion.div
+          className="flex items-center gap-2 px-4 py-2"
+          animate={{ opacity: open ? 0 : 1, height: open ? 0 : "auto" }}
+          transition={{ duration: 0.1 }}
+          style={{ pointerEvents: open ? "none" : "auto" }}
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="text-[color:var(--color-gray9)]"
+            aria-hidden="true"
           >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-[color:var(--color-gray9)]"
-              aria-hidden="true"
+            <circle cx="12" cy="12" r="10" />
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
+          </svg>
+          <span className="text-12 text-[color:var(--color-gray9)]">
+            Navigate
+          </span>
+        </motion.div>
+
+        <AnimatePresence>
+          {open && (
+            <motion.div
+              className="flex items-center gap-6 px-5 py-3"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ type: "spring", stiffness: 400, damping: 30 }}
             >
-              <circle cx="12" cy="12" r="10" />
-              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-              <line x1="12" y1="17" x2="12.01" y2="17" />
-            </svg>
-            <span className="text-12 text-[color:var(--color-gray9)]">
-              Navigate
-            </span>
-          </motion.button>
-        ) : (
-          <motion.div
-            key="panel"
-            className="rounded-12 border border-[color:var(--color-gray4)] bg-[color:var(--color-gray2)] px-5 py-4 shadow-[var(--shadow-medium)]"
-            initial={{ opacity: 0, scale: 0.9, y: 8 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 4 }}
-            transition={{ type: "spring", stiffness: 350, damping: 25 }}
-          >
-            <div className="flex items-center gap-6">
               {shortcuts.map((shortcut, i) => (
                 <motion.div
                   key={shortcut.label}
                   className="flex items-center gap-2"
-                  initial={{ opacity: 0, y: 6 }}
+                  initial={{ opacity: 0, y: 4 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{
                     type: "spring",
                     stiffness: 300,
                     damping: 20,
-                    delay: i * 0.04,
+                    delay: i * 0.03,
                   }}
                 >
                   <div className="flex items-center gap-1">
@@ -93,10 +94,10 @@ export function NavHint() {
                   </span>
                 </motion.div>
               ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
     </motion.div>
   );
 }

@@ -91,9 +91,17 @@ export function transformData(data: TimelineData, minGap = 5): TimelineData {
 
 I also had to cap timeline events to 30 maximum to stay within the 180-line budget. More than that and events start overlapping.
 
-**The Rule I Never Broke**
+**What I Actually Changed in the Timeline**
 
-The CLAUDE.md for this project has one inviolable rule: **Do NOT modify radial timeline spring physics or gesture handling.** The original team spent considerable effort tuning those springs. I never touched them. Every modification I made was to the data pipeline feeding into the timeline, not the timeline itself.
+The CLAUDE.md for this project has one inviolable rule: **Do NOT modify radial timeline spring physics or gesture handling.** The original team spent considerable effort tuning those springs. I never touched them. But I did modify other parts of the timeline to make it work for AI-generated git data:
+
+- **Removed the focus-visible outline** on milestone labels. The original had a `2px solid` outline with `border-radius: 6px` on focused labels, which looked like a weird rectangular border floating over the radial circle. Removed it for a cleaner look.
+- **Added theme-aware label colors** to the `Meta` component. The original labels inherited their color from the parent. In the Cold Obsidian dark theme, they were nearly invisible. Added explicit `--color-gray9` for names and `--color-gray7` for years.
+- **Added a navigation hint pill** fixed at the bottom of the timeline. A small "Navigate" button that expands on hover to show keyboard shortcuts (scroll to zoom, arrows to navigate, click to jump, escape to reset). Spring-animated expand/collapse.
+- **Added an auto-hiding header** that slides the logo text out of view when scrolled into the timeline, so the narrative content isn't obscured. Theme and mute toggles stay visible.
+- **Redesigned the event detail card** from a commit changelog into a narrative paragraph. Multiple commits on the same milestone are combined into flowing text instead of individual rows.
+
+Everything else: the spring constants, the gesture handling, the scroll-snap zoom, the blur parallax, the rotation mechanics, the line rendering. All untouched. That's the work of Rauno, Glenn, and Andy, and it's genuinely some of the best interactive frontend engineering I've seen. Their radial timeline component is what makes Git Historian feel like a product instead of a demo. I built the AI pipeline and the data layer on top of their visualization, and the fact that it works so seamlessly is a testament to how well they designed the original API. Thank you to them for making this possible. Without their foundation, Git Historian would just be a JSON dump with a progress bar.
 
 ---
 
