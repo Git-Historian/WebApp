@@ -97,11 +97,21 @@ The CLAUDE.md for this project has one inviolable rule: **Do NOT modify radial t
 
 - **Removed the focus-visible outline** on milestone labels. The original had a `2px solid` outline with `border-radius: 6px` on focused labels, which looked like a weird rectangular border floating over the radial circle. Removed it for a cleaner look.
 - **Added theme-aware label colors** to the `Meta` component. The original labels inherited their color from the parent. In the Cold Obsidian dark theme, they were nearly invisible. Added explicit `--color-gray9` for names and `--color-gray7` for years.
-- **Added a navigation hint pill** fixed at the bottom of the timeline. A small "Navigate" button that expands on hover to show keyboard shortcuts (scroll to zoom, arrows to navigate, click to jump, escape to reset). Spring-animated expand/collapse.
-- **Added an auto-hiding header** that slides the logo text out of view when scrolled into the timeline, so the narrative content isn't obscured. Theme and mute toggles stay visible.
-- **Redesigned the event detail card** from a commit changelog into a narrative paragraph. Multiple commits on the same milestone are combined into flowing text instead of individual rows.
+- **Added an Enter key shortcut** to zoom into the timeline and select the nearest event. The original only supported scroll-based zoom. Now you can press Enter to zoom in and Escape to zoom back out, making the timeline fully keyboard-navigable.
+- **Added a navigation hint pill** fixed at the bottom of the timeline. A small "Navigate" button that spring-animates open on hover to reveal all keyboard shortcuts: Scroll (zoom in/out), Enter (zoom in), Arrow keys (navigate events), Click (jump to event), Escape (reset view). The pill morphs from a rounded capsule to an expanded panel using border-radius animation and height transitions. No component swapping, no blank flash between states.
+- **Added an auto-hiding header** that slides the "git historian" logo text out of view when you scroll into the timeline content, so the narrative isn't obscured. The theme toggle and mute toggle stay visible. Spring-animated with `stiffness: 300, damping: 25`. Scrolling back up snaps the logo back into place.
+- **Redesigned the event detail card** from a commit changelog into a narrative paragraph. The original showed each commit as a separate row with hash, author, message, and diff stats. Now, the AI generates per-commit stories (`commitStories` map) that get combined into a single flowing paragraph. When you have five commits on the same milestone, they read as one chapter in a story, not five bullet points. Even without AI stories (fallback mode), the commit messages get synthesized into connected sentences with transitional phrases instead of being listed individually.
+- **Added commit stats footer** below the narrative: total commits, insertions/deletions with a green/red ratio bar, and contributor count. Compact, informational, and out of the way of the story.
 
-Everything else: the spring constants, the gesture handling, the scroll-snap zoom, the blur parallax, the rotation mechanics, the line rendering. All untouched. That's the work of Rauno, Glenn, and Andy, and it's genuinely some of the best interactive frontend engineering I've seen. Their radial timeline component is what makes Git Historian feel like a product instead of a demo. I built the AI pipeline and the data layer on top of their visualization, and the fact that it works so seamlessly is a testament to how well they designed the original API. Thank you to them for making this possible. Without their foundation, Git Historian would just be a JSON dump with a progress bar.
+Everything else: the spring constants, the gesture handling, the scroll-snap zoom, the blur parallax, the rotation mechanics, the line rendering. All untouched. That's the work of Rauno, Glenn, and Andy, and it's genuinely some of the best interactive frontend engineering I've seen.
+
+### Credit Where It's Due
+
+The radial timeline is what makes Git Historian feel like a product instead of a tech demo. I built the AI pipeline, the data layer, and the UI chrome on top of their visualization. The fact that it works so seamlessly is a testament to how well [Rauno Freiberg](https://rauno.me), [Glenn Hitchcock](https://glenn.me), and [Andy Allen](https://x.com/asallen) designed the original component and the [devouringdetails.com](https://devouringdetails.com) system.css design system. Their work on spring physics, gesture handling, and responsive scaling gave me a foundation I could build on without fighting. I was able to create something far more intuitive and visually compelling than I could have from scratch. It just looks amazing, and that's largely their doing.
+
+The sound design methodology comes from [Raphael Salaja](https://www.userinterface.wiki/), whose approach to Web Audio synthesis inspired every sound in the app. The idea that UI sounds should be 10-50 milliseconds of synthesized waveforms, so short they feel like physical feedback rather than notifications, completely changed how I think about audio in interfaces.
+
+Thank you to all of them. Without their foundations, Git Historian would be a JSON dump with a progress bar.
 
 ---
 
@@ -363,10 +373,11 @@ User enters GitHub URL
 
 | File | Lines | Purpose |
 |------|-------|---------|
-| `components/timeline/radial-timeline.tsx` | 421 | Core timeline: scroll zoom, rotation, gesture handling |
+| `components/timeline/radial-timeline.tsx` | 430 | Core timeline: scroll zoom, rotation, gesture handling, keyboard shortcuts |
 | `components/timeline/line.tsx` | 105 | Individual timeline line with click/hover interactions |
 | `components/timeline/sheet.tsx` | 55 | Detail panel that appears on zoom |
-| `components/timeline/event-detail.tsx` | 153 | Narrative display for timeline events |
+| `components/timeline/event-detail.tsx` | 155 | Narrative paragraphs + commit stats for timeline events |
+| `components/timeline/nav-hint.tsx` | 103 | Spring-animated navigation shortcut pill |
 | `lib/ai/pipeline.ts` | 300 | AI pipeline orchestration + timeline building |
 | `lib/ai/agents.ts` | 199 | Four AI agent prompts and Claude API calls |
 | `lib/git/extractor.ts` | 107 | Git clone + commit extraction |
@@ -374,6 +385,8 @@ User enters GitHub URL
 | `app/api/analyze/route.ts` | 77 | SSE endpoint for analysis pipeline |
 | `lib/sounds.ts` | 124 | Web Audio API sound synthesis (7 sound types) |
 | `app/globals.css` | ~400 | Design system: themes, animations, keyframes |
+| `components/shared/site-header.tsx` | 135 | Auto-hiding header with theme/mute toggles |
+| `components/shared/theme-provider.tsx` | 61 | Dark/light mode with localStorage persistence |
 | `components/analysis/agent-grid.tsx` | 170 | Progress dashboard during analysis |
 | `components/analysis/agent-panel.tsx` | 211 | Individual agent status cards |
 
