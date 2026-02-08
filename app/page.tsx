@@ -182,6 +182,21 @@ export default function LandingPage() {
             </motion.div>
           ))}
         </motion.div>
+        {/* Disclaimer */}
+        <motion.div
+          className="max-w-xl mx-auto mt-20 rounded-12 border border-[color:var(--border)] px-6 py-5"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.3, duration: 0.5 }}
+        >
+          <p className="text-13 text-[color:var(--color-gray9)] leading-22 text-center">
+            <span className="text-[color:var(--color-gray11)] font-medium">A proof of concept.</span>{" "}
+            Git Historian analyzes the latest 200 commits of any public GitHub repository.
+            It&apos;s a demonstration of how AI agents can transform git history into narrative
+            documentation, not a production tool for massive codebases like React or Linux.
+            Think of it as a theory on what&apos;s possible.
+          </p>
+        </motion.div>
       </main>
 
       {/* Footer */}
