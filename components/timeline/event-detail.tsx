@@ -3,24 +3,62 @@
 import type { TimelineEvent } from "@/lib/timeline/types";
 import { Badge } from "@/components/ui/badge";
 
+/**
+ * Synthesize a readable paragraph from raw commit messages when
+ * the AI hasn't generated per-commit stories. Turns a list of
+ * changelog-style messages into flowing sentences.
+ */
+function synthesizeParagraph(commits: { message: string; author: string }[]): string {
+  if (commits.length === 0) return "";
+  if (commits.length === 1) return commits[0].message + ".";
+
+  // Clean up commit messages: strip trailing periods, lowercase first letter for joining
+  const cleaned = commits.map((c) => {
+    let msg = c.message.trim();
+    // Remove trailing period/colon
+    msg = msg.replace(/[.:]+$/, "");
+    return msg;
+  });
+
+  // Build a flowing paragraph: first sentence stands alone, rest joined naturally
+  const parts: string[] = [];
+  parts.push(cleaned[0] + ".");
+
+  for (let i = 1; i < cleaned.length; i++) {
+    const msg = cleaned[i];
+    // Add connecting phrases for variety
+    if (i === cleaned.length - 1 && cleaned.length > 2) {
+      parts.push("Finally, " + msg.charAt(0).toLowerCase() + msg.slice(1) + ".");
+    } else if (i % 3 === 1) {
+      parts.push("From there, " + msg.charAt(0).toLowerCase() + msg.slice(1) + ".");
+    } else if (i % 3 === 2) {
+      parts.push("Then, " + msg.charAt(0).toLowerCase() + msg.slice(1) + ".");
+    } else {
+      parts.push(msg + ".");
+    }
+  }
+
+  return parts.join(" ");
+}
+
 export function EventDetail({ event }: { event: TimelineEvent }) {
   const commits = event.commits ?? [];
   const totalInsertions = commits.reduce((s, c) => s + c.insertions, 0);
   const totalDeletions = commits.reduce((s, c) => s + c.deletions, 0);
   const authors = [...new Set(commits.map((c) => c.author))];
 
-  // Build a combined narrative from commit stories
+  // Build a combined narrative from AI-generated commit stories
   const commitStories = commits
     .map((c) => c.story)
     .filter((s): s is string => !!s);
 
-  // For commits without AI stories, use the raw message as a sentence
-  const rawFallbacks = commits
-    .filter((c) => !c.story)
-    .map((c) => c.message);
-
   const combinedNarrative = commitStories.length > 0
     ? commitStories.join(" ")
+    : null;
+
+  // Fallback: synthesize a paragraph from raw commit messages
+  const fallbackParagraph = !combinedNarrative && commits.length > 0
+    ? synthesizeParagraph(commits)
     : null;
 
   return (
@@ -51,54 +89,18 @@ export function EventDetail({ event }: { event: TimelineEvent }) {
         </p>
       )}
 
-      {/* Combined commit stories */}
+      {/* AI-generated commit stories as a flowing paragraph */}
       {combinedNarrative && (
         <p className="leading-[1.8] text-15 text-[color:var(--color-gray11)]">
           {combinedNarrative}
         </p>
       )}
 
-      {/* Raw commit messages for commits without stories */}
-      {rawFallbacks.length > 0 && commitStories.length > 0 && (
-        <div className="flex flex-col gap-1">
-          {rawFallbacks.map((msg, i) => (
-            <span key={i} className="text-14 text-[color:var(--color-gray9)]">
-              {msg}
-            </span>
-          ))}
-        </div>
-      )}
-
-      {/* If no AI stories at all, show commits the old way */}
-      {commitStories.length === 0 && commits.length > 0 && (
-        <div className="flex flex-col gap-3">
-          {commits.map((commit) => (
-            <div
-              key={commit.hash}
-              className="flex flex-col gap-1 border-l-2 border-[color:var(--color-gray4)] pl-3 -ml-2 py-2 px-3 rounded-6 transition-colors hover:bg-[color:var(--color-gray3)]"
-            >
-              <div className="flex items-center gap-2">
-                <code className="text-12 font-mono text-[color:var(--color-gray11)]">
-                  {commit.hash.slice(0, 7)}
-                </code>
-                <span className="text-12 text-[color:var(--color-gray11)]">
-                  {commit.author}
-                </span>
-              </div>
-              <span className="text-14">{commit.message}</span>
-              {(commit.insertions > 0 || commit.deletions > 0) && (
-                <div className="flex items-center gap-2 text-12">
-                  <span className="font-mono text-[color:var(--color-green9)]">
-                    +{commit.insertions}
-                  </span>
-                  <span className="font-mono text-[color:var(--color-red9)]">
-                    -{commit.deletions}
-                  </span>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+      {/* Fallback: synthesized paragraph from raw commit messages */}
+      {fallbackParagraph && (
+        <p className="leading-[1.8] text-15 text-[color:var(--color-gray11)]">
+          {fallbackParagraph}
+        </p>
       )}
 
       {/* Architecture note */}
