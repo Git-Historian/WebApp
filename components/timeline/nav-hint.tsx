@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "motion/react";
 
 const shortcuts = [
   { keys: ["Scroll"], label: "Zoom in & out" },
+  { keys: ["Enter"], label: "Zoom in" },
   { keys: ["\u2190", "\u2192"], label: "Navigate events" },
   { keys: ["Click"], label: "Jump to event" },
   { keys: ["Esc"], label: "Reset view" },

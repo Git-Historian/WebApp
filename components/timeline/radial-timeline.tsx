@@ -91,6 +91,17 @@ export default function RadialTimeline({ data }: { data: TimelineEvent[] }) {
       scale.set(SCALE_DEFAULT);
       setActiveIndex(null);
     },
+    Enter: () => {
+      if (!zoom && data.length > 0) {
+        playSnap();
+        playSwoosh("up");
+        document.documentElement.scrollTop = SCROLL_SNAP;
+        scale.set(SCALE_ZOOM);
+        const index = getIndexForRotate(rotate.get(), data);
+        if (index !== null) rotateToIndex(index);
+        setZoom(true);
+      }
+    },
     ArrowLeft: () => {
       playStep();
       arrow(-1)();
