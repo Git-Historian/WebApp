@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "motion/react";
 
 /*──────────────────────────────────────────────────────────────────────────────
   Git Historian — Navigation Dock
-  Morphing surface: compact pill → full keyboard shortcut legend.
+  Morphing surface: compact pill → two-row keyboard shortcut legend.
   Built on Rauno Freiberg's Morph Surface spring pattern.
 ──────────────────────────────────────────────────────────────────────────────*/
 
@@ -22,18 +22,21 @@ const LOGO_SPRING = {
   damping: 35,
 };
 
-const SHORTCUTS = [
+const ROW_1 = [
   { keys: ["Scroll"], label: "Zoom in & out" },
   { keys: ["Enter"], label: "Zoom in" },
   { keys: ["\u2190", "\u2192"], label: "Navigate events" },
+];
+
+const ROW_2 = [
   { keys: ["Click"], label: "Jump to event" },
   { keys: ["Esc"], label: "Reset view" },
 ];
 
 const COLLAPSED_W = 170;
 const COLLAPSED_H = 44;
-const EXPANDED_W = 620;
-const EXPANDED_H = 56;
+const EXPANDED_W = 420;
+const EXPANDED_H = 100;
 
 /* ─── Question-circle icon ─────────────────────────────────────────────────── */
 function QuestionIcon() {
@@ -58,6 +61,51 @@ function QuestionIcon() {
         ?
       </text>
     </svg>
+  );
+}
+
+/* ─── Shortcut item ────────────────────────────────────────────────────────── */
+function ShortcutItem({
+  shortcut,
+  index,
+}: {
+  shortcut: { keys: string[]; label: string };
+  index: number;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{
+        delay: 0.04 + index * 0.035,
+        type: "spring",
+        stiffness: 500,
+        damping: 30,
+      }}
+      className="flex items-center gap-2"
+    >
+      <div className="flex items-center gap-1">
+        {shortcut.keys.map((key) => {
+          const isWord = key.length > 2;
+          return (
+            <kbd
+              key={key}
+              className="inline-flex items-center justify-center h-6 rounded-4 font-mono font-medium select-none whitespace-nowrap leading-none tracking-[0.02em] bg-[color:var(--color-gray3)] border border-[color:var(--color-gray5)] text-[color:var(--color-gray11)] backdrop-blur-sm"
+              style={{
+                minWidth: isWord ? "auto" : 24,
+                padding: isWord ? "0 8px" : "0 5px",
+                fontSize: isWord ? 11 : 12,
+              }}
+            >
+              {key}
+            </kbd>
+          );
+        })}
+      </div>
+      <span className="text-12 text-[color:var(--color-gray9)] whitespace-nowrap tracking-[0.01em]">
+        {shortcut.label}
+      </span>
+    </motion.div>
   );
 }
 
@@ -100,7 +148,6 @@ export function NavHint() {
             ? "var(--shadow-medium), inset 0 1px 0 var(--color-gray4)"
             : "var(--shadow-small), inset 0 1px 0 var(--color-gray4)",
           cursor: expanded ? "default" : "pointer",
-          maxWidth: "calc(100vw - 40px)",
         }}
         initial={false}
         animate={{
@@ -150,7 +197,7 @@ export function NavHint() {
           )}
         </AnimatePresence>
 
-        {/* ── Expanded ── */}
+        {/* ── Expanded (two rows) ── */}
         <AnimatePresence>
           {expanded && (
             <motion.div
@@ -161,54 +208,32 @@ export function NavHint() {
                 ...SPRING_CONFIG,
                 opacity: { delay: 0.05, duration: 0.2 },
               }}
-              className="flex items-center justify-center gap-4 h-full px-5 absolute inset-0"
-              style={{ maxWidth: "calc(100vw - 40px)" }}
+              className="flex flex-col justify-center gap-2.5 h-full pl-8 pr-5 absolute inset-0"
             >
               {/* Morphed indicator dot */}
               <motion.div
                 layoutId="nav-indicator"
                 transition={LOGO_SPRING}
-                className="absolute left-4 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-[color:var(--color-accent)]"
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-[color:var(--color-accent)]"
               />
 
-              {SHORTCUTS.map((shortcut, i) => {
-                return (
-                  <motion.div
+              {/* Row 1 */}
+              <div className="flex items-center gap-5">
+                {ROW_1.map((shortcut, i) => (
+                  <ShortcutItem key={shortcut.label} shortcut={shortcut} index={i} />
+                ))}
+              </div>
+
+              {/* Row 2 */}
+              <div className="flex items-center gap-5">
+                {ROW_2.map((shortcut, i) => (
+                  <ShortcutItem
                     key={shortcut.label}
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{
-                      delay: 0.04 + i * 0.035,
-                      type: "spring",
-                      stiffness: 500,
-                      damping: 30,
-                    }}
-                    className="flex items-center gap-2"
-                  >
-                    <div className="flex items-center gap-1">
-                      {shortcut.keys.map((key) => {
-                        const isWord = key.length > 2;
-                        return (
-                          <kbd
-                            key={key}
-                            className="inline-flex items-center justify-center h-6 rounded-4 font-mono font-medium select-none whitespace-nowrap leading-none tracking-[0.02em] bg-[color:var(--color-gray3)] border border-[color:var(--color-gray5)] text-[color:var(--color-gray11)] backdrop-blur-sm"
-                            style={{
-                              minWidth: isWord ? "auto" : 24,
-                              padding: isWord ? "0 8px" : "0 5px",
-                              fontSize: isWord ? 11 : 12,
-                            }}
-                          >
-                            {key}
-                          </kbd>
-                        );
-                      })}
-                    </div>
-                    <span className="text-12 text-[color:var(--color-gray9)] whitespace-nowrap tracking-[0.01em]">
-                      {shortcut.label}
-                    </span>
-                  </motion.div>
-                );
-              })}
+                    shortcut={shortcut}
+                    index={i + ROW_1.length}
+                  />
+                ))}
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
