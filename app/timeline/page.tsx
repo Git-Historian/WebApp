@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { motion } from "motion/react";
 import RadialTimeline from "@/components/timeline/radial-timeline";
 import { SiteHeader } from "@/components/shared/site-header";
+import { NavHint } from "@/components/timeline/nav-hint";
 import { SAMPLE_DATA } from "@/lib/timeline/sample-data";
 import type { TimelineEvent } from "@/lib/timeline/types";
 
@@ -73,6 +74,7 @@ function TimelinePage() {
       </motion.div>
 
       <RadialTimeline data={data} />
+      <NavHint />
     </motion.div>
   );
 }
