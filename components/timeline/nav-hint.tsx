@@ -32,8 +32,8 @@ const SHORTCUTS = [
 
 const COLLAPSED_W = 170;
 const COLLAPSED_H = 44;
-const EXPANDED_W = 720;
-const EXPANDED_H = 64;
+const EXPANDED_W = 620;
+const EXPANDED_H = 56;
 
 /* ─── Question-circle icon ─────────────────────────────────────────────────── */
 function QuestionIcon() {
@@ -100,6 +100,7 @@ export function NavHint() {
             ? "var(--shadow-medium), inset 0 1px 0 var(--color-gray4)"
             : "var(--shadow-small), inset 0 1px 0 var(--color-gray4)",
           cursor: expanded ? "default" : "pointer",
+          maxWidth: "calc(100vw - 40px)",
         }}
         initial={false}
         animate={{
@@ -160,7 +161,8 @@ export function NavHint() {
                 ...SPRING_CONFIG,
                 opacity: { delay: 0.05, duration: 0.2 },
               }}
-              className="flex items-center justify-center gap-7 h-full px-7 absolute inset-0"
+              className="flex items-center justify-center gap-4 h-full px-5 absolute inset-0"
+              style={{ maxWidth: "calc(100vw - 40px)" }}
             >
               {/* Morphed indicator dot */}
               <motion.div
@@ -189,11 +191,11 @@ export function NavHint() {
                         return (
                           <kbd
                             key={key}
-                            className="inline-flex items-center justify-center h-7 rounded-6 font-mono font-medium select-none whitespace-nowrap leading-none tracking-[0.02em] bg-[color:var(--color-gray3)] border border-[color:var(--color-gray5)] text-[color:var(--color-gray11)] backdrop-blur-sm"
+                            className="inline-flex items-center justify-center h-6 rounded-4 font-mono font-medium select-none whitespace-nowrap leading-none tracking-[0.02em] bg-[color:var(--color-gray3)] border border-[color:var(--color-gray5)] text-[color:var(--color-gray11)] backdrop-blur-sm"
                             style={{
-                              minWidth: isWord ? "auto" : 28,
-                              padding: isWord ? "0 10px" : "0 6px",
-                              fontSize: isWord ? 12 : 13,
+                              minWidth: isWord ? "auto" : 24,
+                              padding: isWord ? "0 8px" : "0 5px",
+                              fontSize: isWord ? 11 : 12,
                             }}
                           >
                             {key}
@@ -201,7 +203,7 @@ export function NavHint() {
                         );
                       })}
                     </div>
-                    <span className="text-13 text-[color:var(--color-gray9)] whitespace-nowrap tracking-[0.01em]">
+                    <span className="text-12 text-[color:var(--color-gray9)] whitespace-nowrap tracking-[0.01em]">
                       {shortcut.label}
                     </span>
                   </motion.div>
