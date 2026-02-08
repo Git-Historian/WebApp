@@ -36,6 +36,9 @@ yarn-error.log*
 # PRD reference assets (not shipped)
 /prd-assets
 
+# Article (private)
+ARTICLE.md
+
 # vercel
 .vercel
 
