@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cloneRepo, extractCommits, cleanup } from "@/lib/git/extractor";
 
+export const maxDuration = 60;
+
 export async function POST(request: NextRequest) {
   try {
     const { url } = await request.json();
@@ -17,10 +19,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    console.log(`[extract] Cloning ${url}`);
+    const extractStart = Date.now();
     const repoPath = await cloneRepo(url);
 
     try {
       const commits = await extractCommits(repoPath);
+      console.log(`[extract] Total extraction time: ${Date.now() - extractStart}ms for ${commits.length} commits`);
       return NextResponse.json({ commits, total: commits.length });
     } finally {
       await cleanup(repoPath);

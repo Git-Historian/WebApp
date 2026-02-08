@@ -55,6 +55,7 @@ export interface Narrative {
   dateRange: string;
   story: string;
   milestones: string[];
+  commitStories?: Record<string, string>;
 }
 
 export interface PipelineResult {

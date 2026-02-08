@@ -9,6 +9,7 @@ import {
   PipelineResult,
 } from "./types";
 import { TimelineEvent, TimelineCommit } from "@/lib/timeline/types";
+import { transformData } from "@/lib/timeline/data";
 import {
   commitAnalyst,
   architectureTracker,
@@ -26,6 +27,9 @@ export async function runPipeline(
   commits: RawCommit[],
   onEvent: EventCallback
 ): Promise<{ result: PipelineResult; timeline: TimelineEvent[] }> {
+  console.log(`[pipeline] Starting with ${commits.length} commits`);
+  const pipelineStart = Date.now();
+
   // Phase 1: Run agents 1-3 in parallel
   const agentNames: AgentName[] = [
     "commit-analyst",
@@ -65,6 +69,17 @@ export async function runPipeline(
   const complexitySnapshots: ComplexitySnapshot[] =
     complexityResult.status === "fulfilled" ? complexityResult.value : [];
 
+  console.log(`[pipeline] Agent results — commitAnalysis: ${commitAnalysis.length}, archEvents: ${architectureEvents.length}, complexity: ${complexitySnapshots.length}`);
+  console.log(`[pipeline] commitResult status: ${commitResult.status}${commitResult.status === 'rejected' ? `, reason: ${commitResult.reason}` : ''}`);
+  console.log(`[pipeline] archResult status: ${archResult.status}${archResult.status === 'rejected' ? `, reason: ${archResult.reason}` : ''}`);
+  console.log(`[pipeline] complexityResult status: ${complexityResult.status}${complexityResult.status === 'rejected' ? `, reason: ${complexityResult.reason}` : ''}`);
+  if (commitAnalysis.length > 0) {
+    const withMilestones = commitAnalysis.filter(a => a.milestoneGroup);
+    const highSig = commitAnalysis.filter(a => a.significance >= 7);
+    console.log(`[pipeline] Milestones: ${withMilestones.length}, high-significance (>=7): ${highSig.length}`);
+    console.log(`[pipeline] Unique milestone groups: ${[...new Set(withMilestones.map(a => a.milestoneGroup))].join(', ')}`);
+  }
+
   // Emit completion/error for each agent
   for (const [i, result] of [
     commitResult,
@@ -86,6 +101,8 @@ export async function runPipeline(
       });
     }
   }
+
+  console.log(`[pipeline] Phase 1 (parallel agents) completed in ${Date.now() - pipelineStart}ms`);
 
   // Phase 2: Narrative writer uses combined results
   emit(onEvent, {
@@ -115,6 +132,8 @@ export async function runPipeline(
     });
   }
 
+  console.log(`[pipeline] Phase 2 (narrative) completed in ${Date.now() - pipelineStart}ms`);
+
   const pipelineResult: PipelineResult = {
     commitAnalysis,
     architectureEvents,
@@ -124,10 +143,13 @@ export async function runPipeline(
 
   // Transform into TimelineEvent[] for the radial timeline
   const timeline = buildTimeline(commits, pipelineResult);
+  console.log(`[pipeline] Built ${timeline.length} timeline events, degrees: [${timeline.map(e => e.degree).join(', ')}]`);
+  console.log(`[pipeline] Total pipeline time: ${Date.now() - pipelineStart}ms`);
 
+  // Only send timeline in the SSE event — full pipelineResult is too large for a single SSE line
   emit(onEvent, {
     type: "pipeline_complete",
-    data: { result: pipelineResult, timeline },
+    data: { timeline },
   });
 
   return { result: pipelineResult, timeline };
@@ -190,12 +212,13 @@ function buildTimeline(
       author: c.author,
       date: c.date,
       message: c.message,
+      story: findCommitStory(c.hash, narratives),
       insertions: c.insertions,
       deletions: c.deletions,
     }));
 
     events.push({
-      name: `${year}`,
+      name: shortLabel(name),
       year,
       degree: 0, // Will be calculated below
       variant: maxSig >= 8 ? "large" : maxSig >= 5 ? "medium" : undefined,
@@ -217,7 +240,7 @@ function buildTimeline(
     const year = new Date(commit.date).getFullYear();
 
     events.push({
-      name: `${year}`,
+      name: shortLabel(commit.message),
       year,
       degree: 0,
       variant: analysis.significance >= 9 ? "large" : "medium",
@@ -228,6 +251,7 @@ function buildTimeline(
           author: commit.author,
           date: commit.date,
           message: commit.message,
+          story: findCommitStory(commit.hash, narratives),
           insertions: commit.insertions,
           deletions: commit.deletions,
         },
@@ -236,19 +260,43 @@ function buildTimeline(
     });
   });
 
-  // Sort by date and assign degrees (0-360 spread)
+  // Sort by date
   events.sort((a, b) => {
     const dateA = a.commits?.[0]?.date ?? "";
     const dateB = b.commits?.[0]?.date ?? "";
     return dateA.localeCompare(dateB);
   });
 
-  const totalEvents = events.length;
-  events.forEach((event, i) => {
-    event.degree = totalEvents > 1 ? (i / (totalEvents - 1)) * 340 + 10 : 180;
-  });
+  // Cap events to ~30 so they fit within LINE_COUNT (180 lines)
+  const MAX_EVENTS = 30;
+  const capped = events.length > MAX_EVENTS
+    ? events.filter((_, i) => i % Math.ceil(events.length / MAX_EVENTS) === 0).slice(0, MAX_EVENTS)
+    : events;
 
-  return events;
+  // Use transformData to produce integer degrees the radial timeline expects
+  return transformData(capped);
+}
+
+function findCommitStory(hash: string, narratives: Narrative[]): string | undefined {
+  const short = hash.slice(0, 7);
+  for (const narrative of narratives) {
+    if (narrative.commitStories) {
+      // Try both full hash prefix and 7-char
+      const story = narrative.commitStories[short] ?? narrative.commitStories[hash];
+      if (story) return story;
+    }
+  }
+  return undefined;
+}
+
+function shortLabel(text: string): string {
+  // Take first 2-3 words, max ~18 chars, for a compact radial label
+  const words = text.split(/[\s/]+/);
+  let label = words[0];
+  for (let i = 1; i < words.length && label.length < 12; i++) {
+    label += " " + words[i];
+  }
+  return label.length > 18 ? label.slice(0, 17) + "\u2026" : label;
 }
 
 function formatDate(isoDate: string): string {

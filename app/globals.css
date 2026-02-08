@@ -73,13 +73,12 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 
-  /* Shadows */
-  --shadow-border-color: rgba(0, 0, 0, 0.05);
+  /* Shadows — adaptive per theme */
+  --shadow-border-color: var(--theme-shadow-border-color);
   --shadow-border: 0 0 0 1px var(--shadow-border-color);
-  --shadow-small: 0px 2px 2px rgba(0, 0, 0, 0.04);
+  --shadow-small: var(--theme-shadow-sm);
   --shadow-border-small: var(--shadow-border), var(--shadow-small);
-  --shadow-medium:
-    0px 2px 2px rgba(0, 0, 0, 0.04), 0px 8px 8px -8px rgba(0, 0, 0, 0.04);
+  --shadow-medium: var(--theme-shadow-md);
   --shadow-border-medium: var(--shadow-border), var(--shadow-medium);
   --shadow-large:
     0px 2px 2px rgba(0, 0, 0, 0.04), 0px 8px 16px -4px rgba(0, 0, 0, 0.04);
@@ -89,37 +88,37 @@
     0px 8px 16px -4px rgba(0, 0, 0, 0.04),
     0px 24px 32px -8px rgba(0, 0, 0, 0.06);
 
-  /* Brand colors (teal accent) */
-  --color-accent: oklch(0.72 0.15 195);
-  --color-accent-bg: oklch(0.72 0.15 195 / 6%);
-  --color-accent-bg2: oklch(0.72 0.15 195 / 58%);
-  --color-accent-bg3: oklch(0.72 0.15 195 / 10%);
+  /* Brand accent — periwinkle blue */
+  --color-accent: var(--theme-accent);
+  --color-accent-bg: var(--theme-accent-subtle);
+  --color-accent-bg2: var(--theme-accent-bg2);
+  --color-accent-bg3: var(--theme-accent-bg3);
 
-  /* Gray scale */
-  --color-high-contrast: #000;
-  --color-low-contrast: #fff;
+  /* Gray scale — cool blue-gray */
+  --color-high-contrast: var(--theme-high-contrast);
+  --color-low-contrast: var(--theme-low-contrast);
   --color-bg: var(--color-gray1);
-  --color-gray1: hsl(0 0% 99%);
-  --color-gray2: hsl(0 0% 97.3%);
-  --color-gray3: hsl(0 0% 95.1%);
-  --color-gray4: hsl(0 0% 93%);
-  --color-gray5: hsl(0 0% 90.9%);
-  --color-gray6: hsl(0 0% 88.7%);
-  --color-gray7: hsl(0 0% 85.8%);
-  --color-gray8: hsl(0 0% 78%);
-  --color-gray9: hsl(0 0% 56.1%);
-  --color-gray10: hsl(0 0% 52.3%);
-  --color-gray11: hsl(0 0% 43.5%);
-  --color-gray12: hsl(0 0% 9%);
+  --color-gray1: var(--theme-gray1);
+  --color-gray2: var(--theme-gray2);
+  --color-gray3: var(--theme-gray3);
+  --color-gray4: var(--theme-gray4);
+  --color-gray5: var(--theme-gray5);
+  --color-gray6: var(--theme-gray6);
+  --color-gray7: var(--theme-gray7);
+  --color-gray8: var(--theme-gray8);
+  --color-gray9: var(--theme-gray9);
+  --color-gray10: var(--theme-gray10);
+  --color-gray11: var(--theme-gray11);
+  --color-gray12: var(--theme-gray12);
 
   /* Agent colors */
-  --color-agent-analyst: hsl(206, 100%, 50%);
+  --color-agent-analyst: hsl(220, 90%, 62%);
   --color-agent-architect: hsl(322, 65%, 54.5%);
   --color-agent-complexity: hsl(39, 100%, 57%);
   --color-agent-narrator: hsl(151, 55%, 41.5%);
 
   /* Focus */
-  --color-focus: var(--color-accent);
+  --color-focus: var(--theme-accent);
 
   /* Motion */
   --animate-blink: blink 1.2s ease infinite;
@@ -144,68 +143,114 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+
+  /* Surface glow */
+  --surface-glow: var(--theme-surface-glow);
 }
 
+/* ═══════════════════════════════════════
+   LIGHT MODE — Cool Paper
+   ═══════════════════════════════════════ */
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  color-scheme: light;
+
+  /* Shadcn */
+  --background: #f4f5f9;
+  --foreground: #1a1c2b;
+  --card: #ffffff;
+  --card-foreground: #1a1c2b;
+  --popover: #ffffff;
+  --popover-foreground: #1a1c2b;
+  --primary: #1a1c2b;
+  --primary-foreground: #f4f5f9;
+  --secondary: #e6e8f0;
+  --secondary-foreground: #1a1c2b;
+  --muted: #e6e8f0;
+  --muted-foreground: #5c5f7a;
+  --accent: #e6e8f0;
+  --accent-foreground: #1a1c2b;
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --border: rgba(100, 110, 160, 0.15);
+  --input: rgba(100, 110, 160, 0.15);
+  --ring: #4d6ef5;
   --hit-area-color: transparent;
+
+  /* Theme tokens — Cool Paper */
+  --theme-accent: #4d6ef5;
+  --theme-accent-subtle: rgba(77, 110, 245, 0.1);
+  --theme-accent-bg2: rgba(77, 110, 245, 0.58);
+  --theme-accent-bg3: rgba(77, 110, 245, 0.1);
+  --theme-high-contrast: #1a1c2b;
+  --theme-low-contrast: #f4f5f9;
+  --theme-gray1: #f4f5f9;
+  --theme-gray2: #ecedf4;
+  --theme-gray3: #e6e8f0;
+  --theme-gray4: #dcdfe9;
+  --theme-gray5: #d2d5e1;
+  --theme-gray6: #c6c9d6;
+  --theme-gray7: #b5b9ca;
+  --theme-gray8: #979cb2;
+  --theme-gray9: #5c5f7a;
+  --theme-gray10: #4d5068;
+  --theme-gray11: #3a3d52;
+  --theme-gray12: #1a1c2b;
+  --theme-shadow-border-color: rgba(100, 110, 160, 0.12);
+  --theme-shadow-sm: 0 1px 3px rgba(30, 40, 80, 0.06);
+  --theme-shadow-md: 0 4px 12px rgba(30, 40, 80, 0.08);
+  --theme-surface-glow: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(77, 110, 245, 0.05) 0%, transparent 70%);
 }
 
+/* ═══════════════════════════════════════
+   DARK MODE — Cold Obsidian
+   ═══════════════════════════════════════ */
 .dark {
-  --background: #0a0a0a;
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  color-scheme: dark;
+
+  /* Shadcn */
+  --background: #08090c;
+  --foreground: #e4e6f0;
+  --card: #10121a;
+  --card-foreground: #e4e6f0;
+  --popover: #12141e;
+  --popover-foreground: #e4e6f0;
+  --primary: #e4e6f0;
+  --primary-foreground: #08090c;
+  --secondary: #161923;
+  --secondary-foreground: #e4e6f0;
+  --muted: #161923;
+  --muted-foreground: #7a7f99;
+  --accent: #161923;
+  --accent-foreground: #e4e6f0;
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --border: rgba(140, 150, 200, 0.12);
+  --input: rgba(140, 150, 200, 0.15);
+  --ring: #6b8aff;
   --hit-area-color: transparent;
 
-  --color-bg: #0a0a0a;
-  --color-high-contrast: #fff;
-  --color-low-contrast: #0a0a0a;
-  --color-gray1: hsl(0 0% 8.5%);
-  --color-gray2: hsl(0 0% 11%);
-  --color-gray3: hsl(0 0% 13.6%);
-  --color-gray4: hsl(0 0% 15.8%);
-  --color-gray5: hsl(0 0% 17.9%);
-  --color-gray6: hsl(0 0% 20.5%);
-  --color-gray7: hsl(0 0% 24.3%);
-  --color-gray8: hsl(0 0% 31.2%);
-  --color-gray9: hsl(0 0% 43.9%);
-  --color-gray10: hsl(0 0% 49.4%);
-  --color-gray11: hsl(0 0% 62.8%);
-  --color-gray12: hsl(0 0% 93%);
-  --shadow-border-color: var(--color-gray3);
+  /* Theme tokens — Cold Obsidian */
+  --theme-accent: #6b8aff;
+  --theme-accent-subtle: rgba(107, 138, 255, 0.12);
+  --theme-accent-bg2: rgba(107, 138, 255, 0.58);
+  --theme-accent-bg3: rgba(107, 138, 255, 0.1);
+  --theme-high-contrast: #e4e6f0;
+  --theme-low-contrast: #08090c;
+  --theme-gray1: #08090c;
+  --theme-gray2: #10121a;
+  --theme-gray3: #161923;
+  --theme-gray4: #1b1e2a;
+  --theme-gray5: #212536;
+  --theme-gray6: #2a2e40;
+  --theme-gray7: #353a50;
+  --theme-gray8: #4a5070;
+  --theme-gray9: #7a7f99;
+  --theme-gray10: #8b90a8;
+  --theme-gray11: #a0a5bb;
+  --theme-gray12: #e4e6f0;
+  --theme-shadow-border-color: rgba(140, 150, 200, 0.08);
+  --theme-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --theme-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --theme-surface-glow: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(80, 100, 200, 0.06) 0%, transparent 70%);
 }
 
 @keyframes blink {
@@ -218,6 +263,35 @@
 @keyframes fade-in {
   0% { opacity: 0; }
   100% { opacity: 1; }
+}
+
+@keyframes text-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes track-pulse {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 0.35; }
+}
+
+@keyframes bar-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes loader-spin {
+  0% {
+    stroke-dashoffset: 138.23;
+    transform: rotate(0deg);
+  }
+  50% {
+    stroke-dashoffset: 34.56;
+  }
+  100% {
+    stroke-dashoffset: 138.23;
+    transform: rotate(360deg);
+  }
 }
 
 @layer base {
@@ -253,6 +327,8 @@
     outline: 0;
     &:focus-visible {
       outline: 2px solid var(--color-focus);
+      outline-offset: 2px;
     }
   }
+
 }

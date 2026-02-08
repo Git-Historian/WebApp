@@ -39,7 +39,7 @@ const STATUS_LABELS: Record<AgentStatus["status"], string> = {
   error: "Error",
 };
 
-const RING_SIZE = 64;
+const RING_SIZE = 52;
 const STROKE_WIDTH = 3;
 const RADIUS = (RING_SIZE - STROKE_WIDTH) / 2;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
@@ -47,9 +47,11 @@ const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 function ProgressRing({
   progress,
   color,
+  isActive,
 }: {
   progress: number;
   color: string;
+  isActive: boolean;
 }) {
   const offset = CIRCUMFERENCE - (progress / 100) * CIRCUMFERENCE;
 
@@ -79,6 +81,8 @@ function ProgressRing({
         strokeDasharray={CIRCUMFERENCE}
         animate={{ strokeDashoffset: offset }}
         transition={{ type: "spring", stiffness: 120, damping: 20 }}
+        className={isActive ? "animate-[loader-spin_2.4s_ease-in-out_infinite]" : ""}
+        style={{ transformOrigin: "center" }}
       />
     </svg>
   );
@@ -121,7 +125,6 @@ export function AgentPanel({
   const { playPop, playSnap } = useSounds();
   const elapsed = useElapsedTime(agent.startedAt, agent.completedAt);
   const prevStatusRef = useRef(agent.status);
-  const thinkingRef = useRef<HTMLDivElement>(null);
 
   // Sound triggers on status transitions
   useEffect(() => {
@@ -136,47 +139,36 @@ export function AgentPanel({
     }
   }, [agent.status, playPop, playSnap]);
 
-  // Auto-scroll thinking text
-  useEffect(() => {
-    if (thinkingRef.current) {
-      thinkingRef.current.scrollTop = thinkingRef.current.scrollHeight;
-    }
-  }, [agent.thinking]);
-
   const isActive =
     agent.status === "running" || agent.status === "thinking";
   const isDone = agent.status === "complete";
   const isError = agent.status === "error";
+  const isWaiting = agent.status === "idle";
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, y: 24, scale: 0.96 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{
         type: "spring",
-        stiffness: 200,
-        damping: 25,
-        delay: index * 0.1,
+        stiffness: 150,
+        damping: 20,
+        mass: 0.6,
+        delay: index * 0.12,
       }}
-      className="relative flex flex-col gap-4 rounded-12 border p-5"
+      className="relative flex flex-col gap-4 rounded-12 border p-5 bg-[color:var(--color-gray2)]"
       style={{
-        borderColor: isDone
-          ? meta.colorVar
-          : isError
-            ? "var(--color-red)"
-            : isActive
-              ? `color-mix(in srgb, ${meta.colorVar} 50%, transparent)`
-              : "var(--color-gray4)",
+        borderColor: isError ? "var(--destructive)" : "var(--color-gray4)",
       }}
       role="region"
       aria-label={`${meta.label} agent - ${STATUS_LABELS[agent.status]}`}
     >
       {/* Header */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3.5">
         <div className="relative grid-stack">
-          <ProgressRing progress={agent.progress} color={meta.colorVar} />
+          <ProgressRing progress={agent.progress} color={meta.colorVar} isActive={isActive} />
           <span
-            className="text-13 font-mono font-medium"
+            className="text-12 font-mono font-medium"
             style={{ color: meta.colorVar }}
           >
             {meta.icon}
@@ -185,17 +177,15 @@ export function AgentPanel({
 
         <div className="flex flex-1 flex-col gap-1">
           <div className="flex items-center justify-between">
-            <span className="text-15 font-medium text-foreground">
+            <span className="text-15 font-semibold text-[color:var(--color-high-contrast)]">
               {meta.label}
             </span>
-            {agent.startedAt && (
-              <span className="text-12 font-mono text-muted-foreground tabular-nums">
-                {elapsed}s
-              </span>
-            )}
+            <span className="text-12 font-mono text-[color:var(--color-gray6)] tabular-nums">
+              {agent.startedAt ? `${elapsed}s` : "\u2014"}
+            </span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <span
               className="inline-block h-1.5 w-1.5 rounded-full"
               style={{
@@ -204,40 +194,17 @@ export function AgentPanel({
                   : isDone
                     ? "var(--color-agent-narrator)"
                     : isError
-                      ? "var(--color-red)"
+                      ? "var(--destructive)"
                       : "var(--color-gray8)",
               }}
             />
-            <span className="text-13 text-muted-foreground">
+            <span className="text-12 text-[color:var(--color-gray9)]">
               {isError ? agent.error : STATUS_LABELS[agent.status]}
             </span>
           </div>
         </div>
       </div>
 
-      {/* Thinking stream */}
-      <div
-        ref={thinkingRef}
-        className="h-12 overflow-hidden text-12 font-mono leading-16 text-muted-foreground transition-opacity"
-        style={{ opacity: agent.thinking ? 1 : 0.4 }}
-      >
-        {agent.thinking ? (
-          <span>
-            {agent.thinking}
-            {isActive && (
-              <span className="animate-blink ml-0.5 inline-block text-foreground">
-                |
-              </span>
-            )}
-          </span>
-        ) : (
-          <span className="italic">
-            {agent.status === "idle"
-              ? "Waiting for pipeline..."
-              : "Processing..."}
-          </span>
-        )}
-      </div>
     </motion.div>
   );
 }

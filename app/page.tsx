@@ -2,15 +2,44 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { StaggeringText } from "@/components/shared/staggering-text";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { SiteHeader } from "@/components/shared/site-header";
 import { useSounds } from "@/components/shared/sound-provider";
 
-const DEMO_REPO =
-  process.env.NEXT_PUBLIC_DEMO_REPO ||
-  "https://github.com/helloluma/edwardguillen";
+function AnimatedLink({
+  href,
+  children,
+}: {
+  href: string;
+  children: React.ReactNode;
+}) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <a
+      href={href}
+      className="relative inline-block text-[color:var(--color-gray11)] hover:text-[color:var(--color-high-contrast)] transition-colors cursor-pointer"
+      target="_blank"
+      rel="noopener noreferrer"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {children}
+      <AnimatePresence>
+        {hovered && (
+          <motion.span
+            className="absolute bottom-0 left-0 h-px w-full bg-current"
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            exit={{ scaleX: 0, transition: { duration: 0.15 } }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            style={{ originX: 0 }}
+          />
+        )}
+      </AnimatePresence>
+    </a>
+  );
+}
 
 const steps = [
   {
@@ -33,7 +62,7 @@ const steps = [
 
 export default function LandingPage() {
   const router = useRouter();
-  const { playPop, playSnap } = useSounds();
+  const { playSnap } = useSounds();
   const [repoUrl, setRepoUrl] = useState("");
   const [isNavigating, setIsNavigating] = useState(false);
   const [headlineRevealed, setHeadlineRevealed] = useState(false);
@@ -51,23 +80,21 @@ export default function LandingPage() {
     router.push(`/analyze?repo=${encodeURIComponent(targetUrl)}`);
   }
 
-  function handleDemo() {
-    playPop();
-    handleAnalyze(DEMO_REPO);
-  }
-
   return (
-    <div className="min-h-screen bg-[color:var(--color-bg)] flex flex-col">
-      {/* Header */}
-      <header className="flex items-center justify-between px-6 py-4 max-w-5xl w-full mx-auto">
-        <span className="text-14 font-mono text-[color:var(--color-gray11)]">
-          git historian
-        </span>
-        <MuteToggle />
-      </header>
+    <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
+      {/* Surface glow */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{ background: "var(--surface-glow)" }}
+        aria-hidden="true"
+      />
+
+      <div className="max-w-5xl w-full mx-auto relative z-10">
+        <SiteHeader />
+      </div>
 
       {/* Hero */}
-      <main className="flex-1 flex flex-col items-center justify-center px-6 pb-20">
+      <main id="main-content" className="flex-1 flex flex-col items-center justify-center px-6 pb-20 relative z-10">
         <motion.div
           className="text-center max-w-3xl mx-auto"
           initial={{ opacity: 0, y: 20 }}
@@ -81,7 +108,7 @@ export default function LandingPage() {
           </div>
 
           <motion.p
-            className="text-18 max-sm:text-16 text-[color:var(--color-gray11)] leading-28 max-w-xl mx-auto mb-10"
+            className="text-18 max-sm:text-16 text-[color:var(--color-gray9)] leading-28 max-w-xl mx-auto mb-10"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.5 }}
@@ -91,35 +118,37 @@ export default function LandingPage() {
           </motion.p>
 
           {/* URL Input */}
-          <motion.div
+          <motion.form
             className="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto mb-4"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.4 }}
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleAnalyze();
+            }}
           >
-            <Input
+            <input
               type="url"
               placeholder="https://github.com/owner/repo"
               value={repoUrl}
               onChange={(e) => setRepoUrl(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleAnalyze();
-              }}
-              className="flex-1 h-11 bg-[color:var(--color-gray2)] border-[color:var(--color-gray4)] text-[color:var(--color-high-contrast)] placeholder:text-[color:var(--color-gray9)] font-mono text-14"
+              className="flex-1 h-11 px-4 rounded-[10px] bg-[color:var(--card)] border border-[color:var(--border)] text-[color:var(--color-high-contrast)] placeholder:text-[color:var(--color-gray9)] font-mono text-13 shadow-[var(--shadow-small)] transition-colors focus:border-[color:var(--theme-accent)]"
               aria-label="GitHub repository URL"
               disabled={isNavigating}
+              autoComplete="url"
             />
             <motion.button
-              onClick={() => handleAnalyze()}
+              type="submit"
               disabled={!repoUrl.trim() || isNavigating}
-              className="h-11 px-6 bg-[color:var(--color-accent)] text-white font-medium rounded-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-              whileHover={{ scale: 1.04 }}
+              className="h-11 px-6 rounded-[10px] bg-[color:var(--card)] border border-[color:var(--border)] text-[color:var(--color-high-contrast)] font-semibold text-13 cursor-pointer shadow-[var(--shadow-small)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors hover:border-[color:var(--theme-accent)] hover:text-[color:var(--theme-accent)] hover:bg-[color:var(--hover-row,transparent)]"
+              whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.97 }}
               transition={{ type: "spring", stiffness: 400, damping: 25 }}
             >
               Analyze
             </motion.button>
-          </motion.div>
+          </motion.form>
 
         </motion.div>
 
@@ -129,6 +158,8 @@ export default function LandingPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.9, duration: 0.5 }}
+          role="list"
+          aria-label="How it works"
         >
           {steps.map((step, index) => (
             <motion.div
@@ -137,14 +168,15 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1 + index * 0.1, duration: 0.4 }}
+              role="listitem"
             >
-              <span className="text-12 font-mono text-[color:var(--color-accent)] mb-2 block">
+              <span className="text-12 font-mono text-[color:var(--theme-accent)] mb-2 block" aria-hidden="true">
                 {step.number}
               </span>
               <h3 className="text-18 font-medium text-[color:var(--color-high-contrast)] mb-1">
                 {step.title}
               </h3>
-              <p className="text-14 text-[color:var(--color-gray11)] leading-20">
+              <p className="text-14 text-[color:var(--color-gray9)] leading-20">
                 {step.description}
               </p>
             </motion.div>
@@ -153,105 +185,39 @@ export default function LandingPage() {
       </main>
 
       {/* Footer */}
-      <footer className="px-6 py-8">
+      <footer className="px-6 py-8 relative z-10" role="contentinfo">
         <div className="max-w-3xl mx-auto text-center">
           <p className="text-12 text-[color:var(--color-gray9)] leading-20 mb-3">
-            Built by{" "}
-            <a
-              href="https://edwardguillen.com"
-              className="text-[color:var(--color-gray11)] hover:text-[color:var(--color-high-contrast)]"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            Developed and designed by{" "}
+            <AnimatedLink href="https://edwardguillen.com">
               Edward Guillen
-            </a>{" "}
-            for the &ldquo;Built with Opus 4.6&rdquo; Claude Code Hackathon
+            </AnimatedLink>{" "}
+            with{" "}
+            <AnimatedLink href="https://claude.ai/claude-code">
+              Claude Code Opus 4.6
+            </AnimatedLink>
           </p>
           <p className="text-12 text-[color:var(--color-gray9)] leading-20">
             Radial timeline by{" "}
-            <a
-              href="https://devouringdetails.com"
-              className="text-[color:var(--color-gray11)] hover:text-[color:var(--color-high-contrast)]"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <AnimatedLink href="https://devouringdetails.com">
               Rauno Freiberg
-            </a>
+            </AnimatedLink>
             ,{" "}
-            <a
-              href="https://glenn.me/"
-              className="text-[color:var(--color-gray11)] hover:text-[color:var(--color-high-contrast)]"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <AnimatedLink href="https://glenn.me/">
               Glenn Hitchcock
-            </a>{" "}
+            </AnimatedLink>{" "}
             &amp;{" "}
-            <a
-              href="https://x.com/asallen"
-              className="text-[color:var(--color-gray11)] hover:text-[color:var(--color-high-contrast)]"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <AnimatedLink href="https://x.com/asallen">
               Andy Allen
-            </a>
+            </AnimatedLink>
             {" "}&middot;{" "}
             Audio methodology from{" "}
-            <a
-              href="https://www.userinterface.wiki/"
-              className="text-[color:var(--color-gray11)] hover:text-[color:var(--color-high-contrast)]"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <AnimatedLink href="https://www.userinterface.wiki/">
               Raphael Salaja
-            </a>
+            </AnimatedLink>
           </p>
         </div>
       </footer>
     </div>
-  );
-}
-
-function MuteToggle() {
-  const { muted, toggleMute } = useSounds();
-
-  return (
-    <button
-      onClick={toggleMute}
-      className="text-14 text-[color:var(--color-gray9)] hover:text-[color:var(--color-gray11)] transition-colors"
-      aria-label={muted ? "Unmute sounds" : "Mute sounds"}
-    >
-      {muted ? (
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-          <line x1="23" y1="9" x2="17" y2="15" />
-          <line x1="17" y1="9" x2="23" y2="15" />
-        </svg>
-      ) : (
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-          <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
-          <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
-        </svg>
-      )}
-    </button>
   );
 }

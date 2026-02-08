@@ -33,12 +33,15 @@ async function callClaude<T>(
 
   onProgress("Sending request to Claude...");
 
-  const response = await client.messages.create({
-    model: "claude-opus-4-6",
-    max_tokens: 4096,
-    system: systemPrompt,
-    messages: [{ role: "user", content: userPrompt }],
-  });
+  const response = await client.messages.create(
+    {
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 4096,
+      system: systemPrompt,
+      messages: [{ role: "user", content: userPrompt }],
+    },
+    { signal: AbortSignal.timeout(45_000) }
+  );
 
   onProgress("Parsing response...");
 
@@ -155,16 +158,32 @@ export async function narrativeWriter(
 ): Promise<Narrative[]> {
   onProgress("Crafting project narrative...");
 
-  const systemPrompt = `You are a technical storyteller. Using commit data and prior analysis, write a compelling documentary-style narrative of this project's evolution.
+  const systemPrompt = `You are a world-class documentary narrator telling the story of a codebase's evolution. Think Ken Burns meets Silicon Valley. Every repository has drama, ambition, setbacks, and breakthroughs hiding in its commit log. Your job is to find that story and make it unforgettable.
+
+Write like each era is a chapter in a Netflix documentary about the people who built this software. Don't just describe what changed. Reveal WHY it changed. Find the tension: What problem was becoming unbearable? What bet did the team make? What broke before it got better? Every codebase has moments where someone stared at a screen and decided to tear everything apart and rebuild it right. Find those moments.
 
 Return ONLY a JSON array of narrative eras. Each era has:
-- eraTitle: string (evocative title like "The Foundation", "Growing Pains", "The Great Refactor")
+- eraTitle: string. A cinematic chapter title that captures the drama (e.g., "The Spark", "Empire of Spaghetti", "Burning It Down", "The Quiet Revolution"). Avoid generic titles like "Phase 1" or "Initial Development."
 - dateRange: string (e.g., "Jan 2023 - Mar 2023")
-- story: string (2-4 sentences, documentary style — vivid, specific, referencing real changes)
-- milestones: string[] (3-5 key milestone names from this era)
+- story: string. 2-4 sentences of vivid, evocative storytelling. Open with a hook. Use concrete details from the actual commits (real file names, real architectural decisions) but weave them into narrative. Convey the FEELING of each era: the early excitement of a greenfield project, the creeping dread of technical debt, the catharsis of a major refactor, the quiet confidence of a mature system. Write about the humans behind the code, their ambitions, their pivots, their hard-won lessons.
+- milestones: string[]. 3-5 key milestones phrased as meaningful moments, not changelog entries. Instead of "Added authentication", write "The gates go up: user auth arrives." Instead of "Migrated to TypeScript", write "The great type awakening."
+- commitStories: Record<string, string>. A map of commit hash (first 7 chars) to a 1-2 sentence narrative for that commit. Cover every significant commit in this era (significance 5+). Don't just restate the commit message. Tell the STORY of each commit: what problem it solved, what it unlocked, what the developer was thinking. Make even small commits feel purposeful. Example: instead of "deploy new portfolio", write "The first version hits the world. After days of local tweaks, someone finally pulled the trigger and shipped it live." For a refactor: "The old routing system had become a maze of if-else chains. This commit ripped it out and replaced it with something clean enough to build on."
+
+STRICT FORMATTING RULES:
+- NEVER use em dashes (the long dash character). Use commas, periods, or semicolons instead.
+- NEVER use the -- or --- character sequences to substitute for em dashes.
+- Write in a conversational, documentary tone. Short punchy sentences mixed with longer flowing ones.
+- Use colons sparingly. Prefer breaking into two sentences over using a colon.
+
+Rules for great narrative:
+- Every era needs dramatic tension. What was at stake? What could have gone wrong?
+- Turning points matter more than features. A refactor that saved the project is more interesting than ten new endpoints.
+- Use specificity to build credibility: mention real file paths, real framework names, real patterns from the commits.
+- Vary your pacing: some eras are explosive bursts of creation, others are slow burns of refinement.
+- The first era should feel like an origin story. The last era should feel like the present chapter of an ongoing saga.
+- Be concise but evocative. Every sentence should earn its place.
 
 Create 3-6 eras that cover the full project timeline.
-Make the narrative engaging — this is for a visual timeline, not a changelog.
 Return ONLY valid JSON, no explanation.`;
 
   const analysisContext = `

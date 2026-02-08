@@ -26,7 +26,6 @@ export interface AnalysisStreamState {
   timelineData: TimelineEvent[] | null;
   error: string | null;
   startAnalysis: (commits: RawCommit[]) => void;
-  simulateDemo: () => Promise<void>;
 }
 
 export function useAnalysisStream(): AnalysisStreamState {
@@ -122,11 +121,21 @@ export function useAnalysisStream(): AnalysisStreamState {
       setTimelineData(null);
       setError(null);
 
+      // Trim payload: cap commits and files per commit to avoid exceeding body limits
+      const MAX_COMMITS = 150;
+      const MAX_FILES_PER_COMMIT = 15;
+      const trimmedCommits = commits.slice(0, MAX_COMMITS).map((c) => ({
+        ...c,
+        files: c.files.slice(0, MAX_FILES_PER_COMMIT),
+      }));
+
+      let receivedComplete = false;
+
       try {
         const response = await fetch("/api/analyze", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ commits }),
+          body: JSON.stringify({ commits: trimmedCommits }),
           signal: controller.signal,
         });
 
@@ -162,11 +171,17 @@ export function useAnalysisStream(): AnalysisStreamState {
 
             try {
               const event = JSON.parse(json) as AnalysisEvent;
+              if (event.type === "pipeline_complete") receivedComplete = true;
               handleEvent(event);
-            } catch {
-              // Skip malformed lines
+            } catch (e) {
+              console.error("[SSE] Parse error:", e, json.slice(0, 200));
             }
           }
+        }
+
+        // Detect premature stream closure
+        if (!receivedComplete) {
+          setError("Analysis stream ended unexpectedly. The server may have timed out — please try a smaller repository.");
         }
       } catch (err: unknown) {
         if ((err as Error).name === "AbortError") return;
@@ -178,49 +193,5 @@ export function useAnalysisStream(): AnalysisStreamState {
     [handleEvent]
   );
 
-  const simulateDemo = useCallback(async () => {
-    setAgents(initialAgentStatuses());
-    setIsComplete(false);
-    setError(null);
-
-    const delay = (ms: number) =>
-      new Promise<void>((r) => setTimeout(r, ms));
-
-    // Simulate agents 1-3 starting and completing in parallel
-    const parallel: AgentName[] = [
-      "commit-analyst",
-      "architecture-tracker",
-      "complexity-scorer",
-    ];
-
-    for (const name of parallel) {
-      updateAgent(name, { status: "running", progress: 5, startedAt: Date.now() });
-    }
-
-    await delay(400);
-
-    for (const name of parallel) {
-      updateAgent(name, { status: "thinking", thinking: "Analyzing commits...", progress: 40 });
-    }
-
-    await delay(600);
-
-    for (const name of parallel) {
-      updateAgent(name, { status: "complete", progress: 100, completedAt: Date.now() });
-    }
-
-    await delay(200);
-
-    // Simulate narrative writer
-    updateAgent("narrative-writer", { status: "running", progress: 5, startedAt: Date.now() });
-    await delay(400);
-    updateAgent("narrative-writer", { status: "thinking", thinking: "Crafting project narrative...", progress: 50 });
-    await delay(600);
-    updateAgent("narrative-writer", { status: "complete", progress: 100, completedAt: Date.now() });
-
-    await delay(200);
-    setIsComplete(true);
-  }, [updateAgent]);
-
-  return { agents, isComplete, timelineData, error, startAnalysis, simulateDemo };
+  return { agents, isComplete, timelineData, error, startAnalysis };
 }

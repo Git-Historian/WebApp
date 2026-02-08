@@ -203,18 +203,25 @@ export default function RadialTimeline({ data }: { data: TimelineEvent[] }) {
     }
   );
 
+  // Keep a stable ref to rotateToIndex so the mount effect doesn't capture a stale closure
+  const rotateToIndexRef = React.useRef(rotateToIndex);
+  rotateToIndexRef.current = rotateToIndex;
+
+  const dataRef = React.useRef(data);
+  dataRef.current = data;
+
   React.useEffect(() => {
     window.history.scrollRestoration = "manual";
     document.documentElement.scrollTo(0, 0);
 
     // Auto-zoom to first item on mount
     const timer = setTimeout(() => {
-      if (data.length > 0) {
+      if (dataRef.current.length > 0) {
         document.documentElement.scrollTop = SCROLL_SNAP;
         scale.set(SCALE_ZOOM);
-        rotateToIndex(0);
+        rotateToIndexRef.current(0);
       }
-    }, 600);
+    }, 300);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -234,6 +241,7 @@ export default function RadialTimeline({ data }: { data: TimelineEvent[] }) {
     if (targetIndex === null) return;
     setZoom(true);
     setActiveIndex(targetIndex);
+    scale.set(SCALE_ZOOM);
 
     if (zoom) {
       document.documentElement.scrollTo({

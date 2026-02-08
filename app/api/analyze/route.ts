@@ -3,6 +3,8 @@ import { RawCommit } from "@/lib/git/types";
 import { AnalysisEvent } from "@/lib/ai/types";
 import { runPipeline } from "@/lib/ai/pipeline";
 
+export const maxDuration = 120;
+
 export async function POST(request: NextRequest) {
   console.log("[analyze] ANTHROPIC_API_KEY set:", !!process.env.ANTHROPIC_API_KEY);
 
@@ -16,12 +18,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    console.log(`[analyze] Received ${commits.length} commits`);
+
     const encoder = new TextEncoder();
 
     const stream = new ReadableStream({
       async start(controller) {
+        // SSE heartbeat to keep connection alive during long AI calls
+        const heartbeat = setInterval(() => {
+          try {
+            controller.enqueue(encoder.encode(": heartbeat\n\n"));
+          } catch {
+            // Stream already closed
+          }
+        }, 10_000);
+
         function sendEvent(event: AnalysisEvent) {
-          const data = `data: ${JSON.stringify(event)}\n\n`;
+          const json = JSON.stringify(event);
+          const data = `data: ${json}\n\n`;
+          if (event.type === "pipeline_complete") {
+            console.log(`[analyze] Sending pipeline_complete event, JSON size: ${json.length} bytes, timeline events: ${(event.data.timeline as unknown[])?.length ?? 0}`);
+          }
           controller.enqueue(encoder.encode(data));
         }
 
@@ -36,6 +53,7 @@ export async function POST(request: NextRequest) {
             timestamp: Date.now(),
           });
         } finally {
+          clearInterval(heartbeat);
           controller.close();
         }
       },

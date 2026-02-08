@@ -45,8 +45,8 @@ export function Meta({
         ...transition,
       }}
     >
-      <i data-slot="label">{currentItem.name}</i>
-      <i data-slot="year">{currentItem.year}</i>
+      <i data-slot="label" className="text-[color:var(--color-gray9)]">{currentItem.name}</i>
+      <i data-slot="year" className="text-[color:var(--color-gray7)]">{currentItem.year}</i>
     </motion.div>
   );
 }

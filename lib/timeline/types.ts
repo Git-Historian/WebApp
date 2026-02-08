@@ -18,6 +18,7 @@ export interface TimelineCommit {
   author: string;
   date: string;
   message: string;
+  story?: string;
   insertions: number;
   deletions: number;
 }

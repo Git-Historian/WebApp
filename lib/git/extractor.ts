@@ -3,21 +3,24 @@ import { randomUUID } from "crypto";
 import { rm } from "fs/promises";
 import { RawCommit, FileChange } from "./types";
 
+const MAX_COMMITS = 200;
+
 export async function cloneRepo(url: string): Promise<string> {
+  const cloneStart = Date.now();
   const repoPath = `/tmp/gh-${randomUUID()}`;
-  const git = simpleGit();
-  await git.clone(url, repoPath, ["--filter=blob:none", "--no-checkout"]);
-  const repoGit = simpleGit(repoPath);
-  await repoGit.checkout();
+  const git = simpleGit({ timeout: { block: 30_000 } });
+  await git.clone(url, repoPath, ["--bare"]);
+  console.log(`[extract] Clone completed in ${Date.now() - cloneStart}ms`);
   return repoPath;
 }
 
 export async function extractCommits(
   repoPath: string
 ): Promise<RawCommit[]> {
+  const extractStart = Date.now();
   const git: SimpleGit = simpleGit(repoPath);
 
-  // Use git.raw() with a custom format for reliable field extraction
+  // Single git log --numstat call to get commits + diff stats in one pass
   const separator = "---GH_RECORD---";
   const fieldSep = "---GH_FIELD---";
   const format = [
@@ -31,57 +34,56 @@ export async function extractCommits(
   const raw = await git.raw([
     "log",
     "--all",
-    `-n`,
-    "500",
-    `--pretty=format:${format}${separator}`,
+    "-n",
+    String(MAX_COMMITS),
+    "--numstat",
+    `--pretty=format:${separator}${fieldSep}${format}`,
   ]);
 
   if (!raw || !raw.trim()) {
     return [];
   }
 
-  const records = raw
-    .split(separator)
-    .map((r) => r.trim())
-    .filter(Boolean);
+  // Split by record separator — first element before the first separator is empty
+  const blocks = raw.split(separator).filter((b) => b.trim());
 
   const commits: RawCommit[] = [];
 
-  for (const record of records) {
-    const fields = record.split(fieldSep);
+  for (const block of blocks) {
+    const lines = block.split("\n");
+    // First line contains the field separator + commit fields
+    const headerLine = lines[0];
+    const headerPart = headerLine.startsWith(fieldSep)
+      ? headerLine.slice(fieldSep.length)
+      : headerLine;
+    const fields = headerPart.split(fieldSep);
     if (fields.length < 5) continue;
 
     const [hash, author, email, date, message] = fields;
 
-    // Get diff stats for this commit
-    const diffSummary = await git
-      .diffSummary([`${hash}^`, hash])
-      .catch(() => ({
-        files: [],
-        insertions: 0,
-        deletions: 0,
-        changed: 0,
-      }));
+    // Remaining non-empty lines are numstat: "insertions\tdeletions\tfilepath"
+    const files: FileChange[] = [];
+    let totalInsertions = 0;
+    let totalDeletions = 0;
 
-    const files: FileChange[] = diffSummary.files.map((f) => {
-      if (f.binary) {
-        return {
-          path: f.file,
-          status: "modified" as const,
-          insertions: 0,
-          deletions: 0,
-        };
-      }
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+      const parts = line.split("\t");
+      if (parts.length < 3) continue;
+
+      const [ins, del, filePath] = parts;
+      const insertions = ins === "-" ? 0 : parseInt(ins, 10) || 0;
+      const deletions = del === "-" ? 0 : parseInt(del, 10) || 0;
+
       let status: FileChange["status"] = "modified";
-      if (f.insertions > 0 && f.deletions === 0) status = "added";
-      else if (f.deletions > 0 && f.insertions === 0) status = "deleted";
-      return {
-        path: f.file,
-        status,
-        insertions: f.insertions,
-        deletions: f.deletions,
-      };
-    });
+      if (insertions > 0 && deletions === 0) status = "added";
+      else if (deletions > 0 && insertions === 0) status = "deleted";
+
+      files.push({ path: filePath, status, insertions, deletions });
+      totalInsertions += insertions;
+      totalDeletions += deletions;
+    }
 
     commits.push({
       hash,
@@ -90,11 +92,12 @@ export async function extractCommits(
       date,
       message,
       files,
-      insertions: diffSummary.insertions ?? 0,
-      deletions: diffSummary.deletions ?? 0,
+      insertions: totalInsertions,
+      deletions: totalDeletions,
     });
   }
 
+  console.log(`[extract] Extracted ${commits.length} commits in ${Date.now() - extractStart}ms`);
   return commits;
 }
 
