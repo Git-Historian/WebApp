@@ -35,7 +35,7 @@ const ROW_2 = [
 
 const COLLAPSED_W = 170;
 const COLLAPSED_H = 44;
-const EXPANDED_W = 420;
+const EXPANDED_W = 500;
 const EXPANDED_H = 100;
 
 /* ─── Question-circle icon ─────────────────────────────────────────────────── */
@@ -208,13 +208,13 @@ export function NavHint() {
                 ...SPRING_CONFIG,
                 opacity: { delay: 0.05, duration: 0.2 },
               }}
-              className="flex flex-col justify-center gap-2.5 h-full pl-8 pr-5 absolute inset-0"
+              className="flex flex-col items-center justify-center gap-2.5 h-full px-5 absolute inset-0"
             >
               {/* Morphed indicator dot */}
               <motion.div
                 layoutId="nav-indicator"
                 transition={LOGO_SPRING}
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-[color:var(--color-accent)]"
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-[color:var(--color-accent)]"
               />
 
               {/* Row 1 */}
