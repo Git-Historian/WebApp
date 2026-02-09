@@ -119,7 +119,7 @@ export default function LandingPage() {
 
           {/* URL Input */}
           <motion.form
-            className="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto mb-4"
+            className="flex flex-col sm:flex-row gap-3 w-full max-w-lg mx-auto mb-4"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.4 }}
@@ -133,7 +133,7 @@ export default function LandingPage() {
               placeholder="https://github.com/owner/repo"
               value={repoUrl}
               onChange={(e) => setRepoUrl(e.target.value)}
-              className="flex-1 h-11 px-4 rounded-[10px] bg-[color:var(--card)] border border-[color:var(--border)] text-[color:var(--color-high-contrast)] placeholder:text-[color:var(--color-gray9)] font-mono text-13 shadow-[var(--shadow-small)] transition-colors focus:border-[color:var(--theme-accent)]"
+              className="w-full sm:flex-1 h-11 px-4 rounded-[10px] bg-[color:var(--card)] border border-[color:var(--border)] text-[color:var(--color-high-contrast)] placeholder:text-[color:var(--color-gray9)] font-mono text-[13px] sm:text-13 shadow-[var(--shadow-small)] transition-colors outline-none focus:border-[color:var(--theme-accent)] min-w-0"
               aria-label="GitHub repository URL"
               disabled={isNavigating}
               autoComplete="url"
@@ -141,7 +141,7 @@ export default function LandingPage() {
             <motion.button
               type="submit"
               disabled={!repoUrl.trim() || isNavigating}
-              className="h-11 px-6 rounded-[10px] bg-[color:var(--card)] border border-[color:var(--border)] text-[color:var(--color-high-contrast)] font-semibold text-13 cursor-pointer shadow-[var(--shadow-small)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors hover:border-[color:var(--theme-accent)] hover:text-[color:var(--theme-accent)] hover:bg-[color:var(--hover-row,transparent)]"
+              className="w-full sm:w-auto h-11 px-6 rounded-[10px] bg-[color:var(--card)] border border-[color:var(--border)] text-[color:var(--color-high-contrast)] font-semibold text-13 cursor-pointer shadow-[var(--shadow-small)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors hover:border-[color:var(--theme-accent)] hover:text-[color:var(--theme-accent)] hover:bg-[color:var(--hover-row,transparent)]"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.97 }}
               transition={{ type: "spring", stiffness: 400, damping: 25 }}
