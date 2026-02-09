@@ -57,6 +57,14 @@ async function callClaude<T>(
     jsonStr = fenceMatch[1].trim();
   }
 
+  // Last resort: find the first [ or { and extract to the matching close
+  if (!jsonStr.startsWith("[") && !jsonStr.startsWith("{")) {
+    const start = jsonStr.search(/[{[]/);
+    if (start !== -1) {
+      jsonStr = jsonStr.slice(start);
+    }
+  }
+
   return JSON.parse(jsonStr) as T;
 }
 

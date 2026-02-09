@@ -8,14 +8,17 @@ import { playPop as rawPlayPop } from "@/lib/sounds";
 
 export function SiteHeader({
   repoName,
+  timelineId,
   hideOnScroll = false,
 }: {
   repoName?: string;
+  timelineId?: string;
   hideOnScroll?: boolean;
 }) {
   const { theme, toggleTheme } = useTheme();
   const { muted, toggleMute, playSnap } = useSounds();
   const [scrolled, setScrolled] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (!hideOnScroll) return;
@@ -61,6 +64,55 @@ export function SiteHeader({
       </motion.div>
 
       <div className="flex items-center gap-3">
+        {/* Share button */}
+        {timelineId && (
+          <motion.button
+            onClick={() => {
+              playSnap();
+              const url = `${window.location.origin}/timeline/${timelineId}`;
+              navigator.clipboard.writeText(url);
+              setCopied(true);
+              setTimeout(() => setCopied(false), 2000);
+            }}
+            className="text-[color:var(--color-gray9)] hover:text-[color:var(--color-gray11)] transition-colors p-1 cursor-pointer"
+            aria-label={copied ? "Link copied" : "Copy share link"}
+            whileHover={{ scale: 1.15 }}
+            whileTap={{ scale: 0.85 }}
+            transition={{ type: "spring", stiffness: 400, damping: 17 }}
+          >
+            {copied ? (
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            ) : (
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+              </svg>
+            )}
+          </motion.button>
+        )}
+
         {/* Theme toggle */}
         <motion.button
           onClick={() => { playSnap(); toggleTheme(); }}

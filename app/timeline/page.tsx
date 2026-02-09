@@ -2,10 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { motion } from "motion/react";
-import RadialTimeline from "@/components/timeline/radial-timeline";
-import { SiteHeader } from "@/components/shared/site-header";
-import { NavHint } from "@/components/timeline/nav-hint";
+import { TimelineView } from "@/components/timeline/timeline-view";
 import { SAMPLE_DATA } from "@/lib/timeline/sample-data";
 import type { TimelineEvent } from "@/lib/timeline/types";
 
@@ -57,24 +54,5 @@ function TimelinePage() {
     );
   }
 
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.4 }}
-    >
-      {/* Header overlay */}
-      <motion.div
-        className="fixed top-0 left-0 right-0 z-50"
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5, duration: 0.4 }}
-      >
-        <SiteHeader repoName={repoName ?? undefined} hideOnScroll />
-      </motion.div>
-
-      <RadialTimeline data={data} />
-      <NavHint />
-    </motion.div>
-  );
+  return <TimelineView data={data} repoName={repoName ?? undefined} />;
 }

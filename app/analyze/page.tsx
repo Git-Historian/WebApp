@@ -91,11 +91,11 @@ function AnalyzePage() {
     setPhase("transitioning");
   }, [isComplete, phase, playSwoosh]);
 
-  // After transition animation completes, navigate to timeline
+  // After transition animation completes, save to blob and navigate to timeline
   useEffect(() => {
     if (phase !== "transitioning") return;
 
-    const timer = setTimeout(() => {
+    const timer = setTimeout(async () => {
       const data = timelineDataRef.current;
       if (!data || data.length === 0) {
         setExtractError("Analysis completed but no timeline events generated. Try a repo with more history.");
@@ -103,6 +103,23 @@ function AnalyzePage() {
         return;
       }
 
+      try {
+        const res = await fetch("/api/timelines", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ repoName, repoUrl: repo, timeline: data }),
+        });
+
+        if (res.ok) {
+          const { id } = (await res.json()) as { id: string };
+          router.push(`/timeline/${id}?repo=${encodeURIComponent(repoName)}`);
+          return;
+        }
+      } catch {
+        // Blob save failed — fall through to sessionStorage
+      }
+
+      // Fallback: sessionStorage path
       try {
         sessionStorage.setItem("git-historian-timeline", JSON.stringify(data));
       } catch {
@@ -113,7 +130,7 @@ function AnalyzePage() {
     }, 350);
 
     return () => clearTimeout(timer);
-  }, [phase, repoName, router]);
+  }, [phase, repoName, repo, router]);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background">
