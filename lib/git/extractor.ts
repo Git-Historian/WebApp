@@ -35,15 +35,18 @@ function parseGitHubUrl(url: string): { owner: string; repo: string } {
 /**
  * Build common headers for GitHub API requests.
  * Uses GITHUB_TOKEN if available (5,000 req/hr vs 60 unauthenticated).
+ * Pass skipAuth=true to fall back to unauthenticated when token is rejected.
  */
-function githubHeaders(): Record<string, string> {
+function githubHeaders(skipAuth = false): Record<string, string> {
   const headers: Record<string, string> = {
     Accept: "application/vnd.github.v3+json",
     "User-Agent": "git-historian",
   };
-  const token = process.env.GITHUB_TOKEN;
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
+  if (!skipAuth) {
+    const token = process.env.GITHUB_TOKEN;
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
   }
   return headers;
 }
@@ -57,13 +60,15 @@ export async function extractCommits(url: string): Promise<RawCommit[]> {
   const { owner, repo } = parseGitHubUrl(url);
 
   // Fetch commits in pages (GitHub API returns max 100 per page)
+  // If the token is rejected (org policy, etc.), retry without auth
   const pages = Math.ceil(MAX_COMMITS / PER_PAGE);
   const allCommits: RawCommit[] = [];
+  let skipAuth = false;
 
   for (let page = 1; page <= pages; page++) {
     const apiUrl = `https://api.github.com/repos/${owner}/${repo}/commits?per_page=${PER_PAGE}&page=${page}`;
-    const res = await fetch(apiUrl, {
-      headers: githubHeaders(),
+    let res = await fetch(apiUrl, {
+      headers: githubHeaders(skipAuth),
       signal: AbortSignal.timeout(30_000),
     });
 
@@ -73,17 +78,48 @@ export async function extractCommits(url: string): Promise<RawCommit[]> {
           "Repository not found. Make sure the URL is correct and the repository is public."
         );
       }
+
       if (res.status === 403 || res.status === 429) {
-        const resetHeader = res.headers.get("x-ratelimit-reset");
-        const resetMin = resetHeader
-          ? Math.max(1, Math.ceil((Number(resetHeader) * 1000 - Date.now()) / 60000))
-          : null;
-        const waitMsg = resetMin ? ` Resets in ~${resetMin} minute${resetMin === 1 ? "" : "s"}.` : "";
-        throw new Error(
-          `GitHub API rate limit reached. Too many repos analyzed recently.${waitMsg} Try again shortly.`
-        );
+        const remaining = res.headers.get("x-ratelimit-remaining");
+        const isRateLimit = res.status === 429 || remaining === "0";
+
+        if (isRateLimit) {
+          const resetHeader = res.headers.get("x-ratelimit-reset");
+          const resetMin = resetHeader
+            ? Math.max(1, Math.ceil((Number(resetHeader) * 1000 - Date.now()) / 60000))
+            : null;
+          const waitMsg = resetMin ? ` Resets in ~${resetMin} minute${resetMin === 1 ? "" : "s"}.` : "";
+          throw new Error(
+            `GitHub API rate limit reached. Too many repos analyzed recently.${waitMsg} Try again shortly.`
+          );
+        }
+
+        // 403 but NOT rate limit — likely org policy blocking the token
+        // Retry without auth (public repos work unauthenticated)
+        if (!skipAuth && process.env.GITHUB_TOKEN) {
+          console.warn(`[extract] Token rejected for ${owner}/${repo}, retrying without auth`);
+          skipAuth = true;
+          res = await fetch(apiUrl, {
+            headers: githubHeaders(true),
+            signal: AbortSignal.timeout(30_000),
+          });
+
+          if (!res.ok) {
+            throw new Error(
+              `GitHub API access denied for this repository. It may be private or restricted.`
+            );
+          }
+          // Fall through to process the successful response
+        } else {
+          throw new Error(
+            `GitHub API access denied for this repository. It may be private or restricted.`
+          );
+        }
       }
-      throw new Error(`GitHub API error: ${res.status} ${res.statusText}`);
+
+      if (!res.ok) {
+        throw new Error(`GitHub API error: ${res.status} ${res.statusText}`);
+      }
     }
 
     const commits = await res.json();
@@ -119,7 +155,7 @@ export async function extractCommits(url: string): Promise<RawCommit[]> {
         try {
           const detailUrl = `https://api.github.com/repos/${owner}/${repo}/commits/${commit.hash}`;
           const detailRes = await fetch(detailUrl, {
-            headers: githubHeaders(),
+            headers: githubHeaders(skipAuth),
             signal: AbortSignal.timeout(15_000),
           });
 
