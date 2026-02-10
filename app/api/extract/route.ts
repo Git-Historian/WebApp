@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cloneRepo, extractCommits, cleanup } from "@/lib/git/extractor";
+import { extractCommits } from "@/lib/git/extractor";
 
 export const maxDuration = 60;
 
@@ -11,25 +11,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing repo URL" }, { status: 400 });
     }
 
-    const isGitHub = /^https?:\/\/(www\.)?github\.com\/.+\/.+/.test(url);
-    if (!isGitHub) {
+    // Accept: HTTPS URLs, SSH, github.com/owner/repo, or owner/repo shorthand
+    const isValid =
+      /^https?:\/\/(www\.)?github\.com\/.+\/.+/.test(url) ||
+      /^git@github\.com:.+\/.+/.test(url) ||
+      /^(www\.)?github\.com\/.+\/.+/.test(url) ||
+      /^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/.test(url.trim());
+    if (!isValid) {
       return NextResponse.json(
-        { error: "Only GitHub URLs are supported" },
+        { error: "Please enter a valid GitHub repository URL (e.g. https://github.com/owner/repo)" },
         { status: 400 }
       );
     }
 
-    console.log(`[extract] Cloning ${url}`);
+    console.log(`[extract] Fetching commits for ${url}`);
     const extractStart = Date.now();
-    const repoPath = await cloneRepo(url);
-
-    try {
-      const commits = await extractCommits(repoPath);
-      console.log(`[extract] Total extraction time: ${Date.now() - extractStart}ms for ${commits.length} commits`);
-      return NextResponse.json({ commits, total: commits.length });
-    } finally {
-      await cleanup(repoPath);
-    }
+    const commits = await extractCommits(url);
+    console.log(`[extract] Total extraction time: ${Date.now() - extractStart}ms for ${commits.length} commits`);
+    return NextResponse.json({ commits, total: commits.length });
   } catch (error: unknown) {
     console.error("Extract error:", error);
     const message =

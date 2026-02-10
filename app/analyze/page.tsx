@@ -143,12 +143,36 @@ function AnalyzePage() {
           role="alert"
         >
           <p className="text-16 text-red-400">{extractError}</p>
-          <Link
-            href="/"
-            className="text-14 text-[color:var(--color-gray9)] underline underline-offset-4 hover:text-[color:var(--color-high-contrast)]"
-          >
-            Go back
-          </Link>
+          {extractError.includes("rate limit") && (
+            <p className="text-13 text-[color:var(--color-gray9)] max-w-sm">
+              GitHub limits API requests for public use. This resets automatically.
+            </p>
+          )}
+          <div className="flex items-center gap-4">
+            {extractError.includes("rate limit") && (
+              <button
+                onClick={() => {
+                  setExtractError(null);
+                  startedRef.current = false;
+                  setPhase("cloning");
+                  // Re-trigger extraction
+                  setTimeout(() => {
+                    startedRef.current = true;
+                    extract();
+                  }, 100);
+                }}
+                className="text-14 text-[color:var(--color-gray9)] underline underline-offset-4 hover:text-[color:var(--color-high-contrast)]"
+              >
+                Try again
+              </button>
+            )}
+            <Link
+              href="/"
+              className="text-14 text-[color:var(--color-gray9)] underline underline-offset-4 hover:text-[color:var(--color-high-contrast)]"
+            >
+              Go back
+            </Link>
+          </div>
         </motion.div>
       )}
 

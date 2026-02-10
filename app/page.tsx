@@ -115,6 +115,9 @@ export default function LandingPage() {
           >
             Paste a GitHub repo and watch AI agents transform its git history
             into an interactive radial timeline documentary.
+            <span className="block mt-2 text-13 max-sm:text-12 text-[color:var(--color-gray8)]">
+              Accepts HTTPS, SSH, or just owner/repo — public repos only
+            </span>
           </motion.p>
 
           {/* URL Input */}

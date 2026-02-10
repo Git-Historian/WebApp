@@ -24,10 +24,84 @@ function formatCommitsForPrompt(commits: RawCommit[]): string {
     .join("\n\n");
 }
 
+/**
+ * Attempt to repair truncated JSON arrays by closing open brackets/braces.
+ * Handles the common case where Claude's response gets cut off at max_tokens.
+ */
+function repairTruncatedJson(json: string): string {
+  let str = json.trim();
+
+  // Try parsing as-is first
+  try {
+    JSON.parse(str);
+    return str;
+  } catch {
+    // Continue to repair
+  }
+
+  // Remove trailing comma if present
+  str = str.replace(/,\s*$/, "");
+
+  // Remove incomplete last element (e.g., truncated string or object)
+  // Find the last complete element by looking for the last },
+  const lastCompleteComma = str.lastIndexOf("},");
+  const lastCompleteBracket = str.lastIndexOf("}]");
+
+  if (lastCompleteBracket !== -1) {
+    // Already has a closing, try trimming after it
+    const candidate = str.slice(0, lastCompleteBracket + 2);
+    try {
+      JSON.parse(candidate);
+      return candidate;
+    } catch {
+      // Continue
+    }
+  }
+
+  if (lastCompleteComma !== -1) {
+    // Truncate to last complete object and close the array
+    const candidate = str.slice(0, lastCompleteComma + 1) + "]";
+    try {
+      JSON.parse(candidate);
+      return candidate;
+    } catch {
+      // Continue
+    }
+  }
+
+  // Brute force: count unclosed brackets and close them
+  let openBraces = 0;
+  let openBrackets = 0;
+  let inString = false;
+  let escaped = false;
+
+  for (const ch of str) {
+    if (escaped) { escaped = false; continue; }
+    if (ch === "\\") { escaped = true; continue; }
+    if (ch === '"') { inString = !inString; continue; }
+    if (inString) continue;
+    if (ch === "{") openBraces++;
+    if (ch === "}") openBraces--;
+    if (ch === "[") openBrackets++;
+    if (ch === "]") openBrackets--;
+  }
+
+  // If we're inside a string, close it
+  if (inString) str += '"';
+  // Remove trailing comma
+  str = str.replace(/,\s*$/, "");
+  // Close remaining open braces/brackets
+  for (let i = 0; i < openBraces; i++) str += "}";
+  for (let i = 0; i < openBrackets; i++) str += "]";
+
+  return str;
+}
+
 async function callClaude<T>(
   systemPrompt: string,
   userPrompt: string,
-  onProgress: ProgressCallback
+  onProgress: ProgressCallback,
+  maxTokens: number = 8192
 ): Promise<T> {
   const client = getAnthropicClient();
 
@@ -36,11 +110,11 @@ async function callClaude<T>(
   const response = await client.messages.create(
     {
       model: "claude-sonnet-4-20250514",
-      max_tokens: 4096,
+      max_tokens: maxTokens,
       system: systemPrompt,
       messages: [{ role: "user", content: userPrompt }],
     },
-    { signal: AbortSignal.timeout(45_000) }
+    { signal: AbortSignal.timeout(60_000) }
   );
 
   onProgress("Parsing response...");
@@ -65,7 +139,18 @@ async function callClaude<T>(
     }
   }
 
-  return JSON.parse(jsonStr) as T;
+  // Try parsing, and if it fails due to truncation, attempt repair
+  try {
+    return JSON.parse(jsonStr) as T;
+  } catch {
+    const wasTruncated = response.stop_reason === "max_tokens";
+    if (wasTruncated) {
+      console.log(`[callClaude] Response truncated at max_tokens, attempting JSON repair...`);
+      const repaired = repairTruncatedJson(jsonStr);
+      return JSON.parse(repaired) as T;
+    }
+    throw new Error(`Failed to parse Claude response as JSON: ${jsonStr.slice(0, 200)}...`);
+  }
 }
 
 // ---- Agent 1: Commit Analyst ----
@@ -166,38 +251,77 @@ export async function narrativeWriter(
 ): Promise<Narrative[]> {
   onProgress("Crafting project narrative...");
 
-  const systemPrompt = `You are a world-class documentary narrator telling the story of a codebase's evolution. Think Ken Burns meets Silicon Valley. Every repository has drama, ambition, setbacks, and breakthroughs hiding in its commit log. Your job is to find that story and make it unforgettable.
+  // Gather the exact milestone group names from the commit analyst
+  const milestoneGroupNames = [
+    ...new Set(
+      analyses.commitAnalysis
+        .map((c) => c.milestoneGroup)
+        .filter((g): g is string => !!g)
+    ),
+  ];
 
-Write like each era is a chapter in a Netflix documentary about the people who built this software. Don't just describe what changed. Reveal WHY it changed. Find the tension: What problem was becoming unbearable? What bet did the team make? What broke before it got better? Every codebase has moments where someone stared at a screen and decided to tear everything apart and rebuild it right. Find those moments.
+  // Build a map of milestone group → commit hashes for the narrative writer
+  const milestoneCommitHashes: Record<string, string[]> = {};
+  analyses.commitAnalysis.forEach((ca, i) => {
+    if (ca.milestoneGroup && i < commits.length) {
+      if (!milestoneCommitHashes[ca.milestoneGroup]) {
+        milestoneCommitHashes[ca.milestoneGroup] = [];
+      }
+      milestoneCommitHashes[ca.milestoneGroup].push(
+        commits[i].hash.slice(0, 7)
+      );
+    }
+  });
+
+  const systemPrompt = `You are a legendary tech storyteller with the comedic instincts of a stand-up comic who codes. You narrate git histories the way Anthony Bourdain narrated street food: with love, attitude, and zero tolerance for pretension. Every line should hit like a tweet that gets 10k likes.
+
+GOLDEN RULES:
+1. NEVER restate commit messages. "Add OG meta tags" becomes "The site finally learned how to introduce itself at parties instead of showing up as a blank avatar and a URL nobody trusts."
+2. Every sentence must earn its place. If it's boring, kill it. If it sounds like a JIRA ticket, burn it.
+3. Be the friend who explains your git history at 2am and somehow makes it hilarious.
+
+VOICE:
+- Talk like a developer who's seen some things. Ship first, apologize never.
+- Mix sharp observations with genuine respect for the craft. Roast the code, celebrate the coder.
+- Use unexpected metaphors. A database migration isn't "updating the schema," it's "performing open-heart surgery on a patient who's still running a marathon."
+- Be specific. Reference actual file names, frameworks, and patterns. "Updated styles" is a crime. "Taught globals.css to stop having an identity crisis" is art.
+- Casual profanity is fine when it lands naturally. Don't force it.
+- Short sentences punch. Long sentences land when they build to something worth reading.
+
+WHAT MAKES A GOOD STORY:
+- "Fourteen config files walked into a repo. Three survived." (unexpected framing)
+- "The kind of commit you make at midnight when the deploy is broken and your coffee is cold." (emotional truth)
+- "React got evicted. Next.js moved in. The components didn't even notice." (anthropomorphizing tech)
+- "This is the commit where the site went from 'my first website' to 'wait, this is actually good.'" (narrative arc)
 
 Return ONLY a JSON array of narrative eras. Each era has:
-- eraTitle: string. A cinematic chapter title that captures the drama (e.g., "The Spark", "Empire of Spaghetti", "Burning It Down", "The Quiet Revolution"). Avoid generic titles like "Phase 1" or "Initial Development."
+- eraTitle: string. Chapter titles that slap. Good: "The Great Unfucking", "Suddenly, SEO Matters", "Teaching Robots to Talk", "Zero to Deploy or Die Trying", "The Pixel Wars". Bad: "Phase 1", "Initial Development", "Updates and Improvements".
 - dateRange: string (e.g., "Jan 2023 - Mar 2023")
-- story: string. 2-4 sentences of vivid, evocative storytelling. Open with a hook. Use concrete details from the actual commits (real file names, real architectural decisions) but weave them into narrative. Convey the FEELING of each era: the early excitement of a greenfield project, the creeping dread of technical debt, the catharsis of a major refactor, the quiet confidence of a mature system. Write about the humans behind the code, their ambitions, their pivots, their hard-won lessons.
-- milestones: string[]. 3-5 key milestones phrased as meaningful moments, not changelog entries. Instead of "Added authentication", write "The gates go up: user auth arrives." Instead of "Migrated to TypeScript", write "The great type awakening."
-- commitStories: Record<string, string>. A map of commit hash (first 7 chars) to a 1-2 sentence narrative for that commit. Cover every significant commit in this era (significance 5+). Don't just restate the commit message. Tell the STORY of each commit: what problem it solved, what it unlocked, what the developer was thinking. Make even small commits feel purposeful. Example: instead of "deploy new portfolio", write "The first version hits the world. After days of local tweaks, someone finally pulled the trigger and shipped it live." For a refactor: "The old routing system had become a maze of if-else chains. This commit ripped it out and replaced it with something clean enough to build on."
+- story: string. 2-3 sentences that would make someone stop scrolling. Open with a hook. End with a punchline or an insight that sticks. Never describe what was added; describe what changed for the humans. Make the reader feel something.
+- milestones: string[]. 3-5 one-liners that could be standup bits. Not "Implemented dark mode" but "Gave the site sunglasses. It's been wearing them indoors ever since."
+- milestoneStories: Record<string, string>. CRITICAL: Maps the EXACT milestone group name (provided below) to a punchy 2-3 sentence narrative. Use the EXACT group names as keys. Every milestone group in this era MUST have an entry. Each story should read like a paragraph from a really good blog post, not a PR description.
+- commitStories: Record<string, string>. Maps commit hash (first 7 chars) to 1-2 sentences that make you smile. Examples:
+  * "Day one. The repo exists. It's got a README and the audacity to call itself a portfolio."
+  * "Deleted more code than they wrote. The bravest commit in the whole history."
+  * "Someone finally realized the CSS was having a civil war with itself. This commit brokered the peace deal."
+  * "The moment the site learned social skills. Shared links stopped showing up like a broken JPEG and a prayer."
+  Cover every significant commit (significance 5+). Use the EXACT 7-char hashes provided below.
 
-STRICT FORMATTING RULES:
-- NEVER use em dashes (the long dash character). Use commas, periods, or semicolons instead.
-- NEVER use the -- or --- character sequences to substitute for em dashes.
-- Write in a conversational, documentary tone. Short punchy sentences mixed with longer flowing ones.
-- Use colons sparingly. Prefer breaking into two sentences over using a colon.
+FORMATTING:
+- NEVER use em dashes. Use commas, periods, or semicolons.
+- NEVER use -- or --- sequences.
+- Don't start stories with "In this era" or "During this phase." Just start with the interesting part.
+- Read everything out loud. If it sounds like it belongs in a changelog, rewrite it until it doesn't.
 
-Rules for great narrative:
-- Every era needs dramatic tension. What was at stake? What could have gone wrong?
-- Turning points matter more than features. A refactor that saved the project is more interesting than ten new endpoints.
-- Use specificity to build credibility: mention real file paths, real framework names, real patterns from the commits.
-- Vary your pacing: some eras are explosive bursts of creation, others are slow burns of refinement.
-- The first era should feel like an origin story. The last era should feel like the present chapter of an ongoing saga.
-- Be concise but evocative. Every sentence should earn its place.
-
-Create 3-6 eras that cover the full project timeline.
+Create 3-6 eras covering the full timeline.
 Return ONLY valid JSON, no explanation.`;
 
   const analysisContext = `
 COMMIT ANALYSIS SUMMARY:
 - High significance commits (7+): ${analyses.commitAnalysis.filter((c) => c.significance >= 7).length}
-- Milestone groups: ${[...new Set(analyses.commitAnalysis.map((c) => c.milestoneGroup).filter(Boolean))].join(", ")}
+
+MILESTONE GROUPS (use these EXACT names as keys in milestoneStories):
+${milestoneGroupNames.map((name) => `- "${name}" (commits: ${milestoneCommitHashes[name]?.join(", ") ?? "none"})`).join("\n")}
 
 ARCHITECTURE EVENTS:
 ${analyses.architectureEvents.map((e) => `- [${e.type}] ${e.description} (${e.date})`).join("\n")}

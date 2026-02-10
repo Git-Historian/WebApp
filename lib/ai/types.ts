@@ -55,6 +55,8 @@ export interface Narrative {
   dateRange: string;
   story: string;
   milestones: string[];
+  /** Map of milestone group name → witty narrative for that group */
+  milestoneStories?: Record<string, string>;
   commitStories?: Record<string, string>;
 }
 

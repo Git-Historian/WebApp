@@ -143,6 +143,10 @@ export async function runPipeline(
 
   // Transform into TimelineEvent[] for the radial timeline
   const timeline = buildTimeline(commits, pipelineResult);
+  // Log narrative matching stats
+  const withNarrative = timeline.filter(e => e.narrative);
+  const withCommitStories = timeline.filter(e => e.commits?.some(c => c.story));
+  console.log(`[pipeline] Narrative matching: ${withNarrative.length}/${timeline.length} events have narrative, ${withCommitStories.length}/${timeline.length} have commit stories`);
   console.log(`[pipeline] Built ${timeline.length} timeline events, degrees: [${timeline.map(e => e.degree).join(', ')}]`);
   console.log(`[pipeline] Total pipeline time: ${Date.now() - pipelineStart}ms`);
 
@@ -200,12 +204,12 @@ function buildTimeline(
       group.commits.some((c) => c.hash === e.commitHash)
     );
 
-    // Find matching narrative
-    const narrative = narratives.find((n) =>
-      n.milestones.some(
-        (m) => m.toLowerCase().includes(name.toLowerCase().slice(0, 10))
-      )
-    );
+    // Find matching narrative — first try milestoneStories (exact key), then era story fallback
+    const milestoneNarrative = findMilestoneStory(name, narratives);
+    // If no milestoneStory, fall back to the era story from date-range matching
+    const eraStory = !milestoneNarrative
+      ? findEraStoryByDate(firstCommit.date, narratives)
+      : undefined;
 
     const timelineCommits: TimelineCommit[] = group.commits.map((c) => ({
       hash: c.hash,
@@ -223,7 +227,7 @@ function buildTimeline(
       degree: 0, // Will be calculated below
       variant: maxSig >= 8 ? "large" : maxSig >= 5 ? "medium" : undefined,
       title: name,
-      narrative: narrative?.story,
+      narrative: milestoneNarrative ?? eraStory,
       commits: timelineCommits,
       architectureNote: archNote?.description,
       complexityDelta: undefined,
@@ -275,6 +279,65 @@ function buildTimeline(
 
   // Use transformData to produce integer degrees the radial timeline expects
   return transformData(capped);
+}
+
+/**
+ * Look up a milestone story by exact group name across all narrative eras.
+ * Falls back to case-insensitive match and partial match.
+ */
+function findMilestoneStory(groupName: string, narratives: Narrative[]): string | undefined {
+  const nameLower = groupName.toLowerCase();
+
+  for (const narrative of narratives) {
+    if (!narrative.milestoneStories) continue;
+
+    // Exact match
+    if (narrative.milestoneStories[groupName]) {
+      return narrative.milestoneStories[groupName];
+    }
+
+    // Case-insensitive match
+    for (const [key, story] of Object.entries(narrative.milestoneStories)) {
+      if (key.toLowerCase() === nameLower) return story;
+    }
+  }
+
+  // Partial match: check if any milestoneStory key contains the group name or vice versa
+  for (const narrative of narratives) {
+    if (!narrative.milestoneStories) continue;
+    for (const [key, story] of Object.entries(narrative.milestoneStories)) {
+      const keyLower = key.toLowerCase();
+      if (keyLower.includes(nameLower) || nameLower.includes(keyLower)) {
+        return story;
+      }
+    }
+  }
+
+  return undefined;
+}
+
+/**
+ * Find the era story by matching a commit date to a narrative's date range.
+ * Parses "Mon YYYY - Mon YYYY" format from narrative.dateRange.
+ */
+function findEraStoryByDate(commitDate: string, narratives: Narrative[]): string | undefined {
+  const commitTime = new Date(commitDate).getTime();
+  if (isNaN(commitTime)) return undefined;
+
+  for (const narrative of narratives) {
+    const parts = narrative.dateRange?.split(/\s*[-–]\s*/);
+    if (!parts || parts.length < 2) continue;
+    const eraStart = new Date(parts[0].trim()).getTime();
+    const eraEnd = new Date(parts[1].trim()).getTime();
+    if (isNaN(eraStart) || isNaN(eraEnd)) continue;
+
+    // Give a 30-day buffer on each side for fuzzy date matching
+    const buffer = 30 * 24 * 60 * 60 * 1000;
+    if (commitTime >= eraStart - buffer && commitTime <= eraEnd + buffer) {
+      return narrative.story;
+    }
+  }
+  return undefined;
 }
 
 function findCommitStory(hash: string, narratives: Narrative[]): string | undefined {
