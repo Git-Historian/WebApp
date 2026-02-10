@@ -39,16 +39,50 @@ function repairTruncatedJson(json: string): string {
     // Continue to repair
   }
 
-  // Remove trailing comma if present
+  // Strategy 1: Find the last complete top-level array element.
+  // Walk through the string tracking nesting depth to find positions where
+  // a top-level array element closes (depth goes from 2 back to 1).
+  if (str.startsWith("[")) {
+    let depth = 0;
+    let inStr = false;
+    let esc = false;
+    const topLevelClosePositions: number[] = [];
+
+    for (let i = 0; i < str.length; i++) {
+      const ch = str[i];
+      if (esc) { esc = false; continue; }
+      if (ch === "\\") { esc = true; continue; }
+      if (ch === '"') { inStr = !inStr; continue; }
+      if (inStr) continue;
+      if (ch === "{" || ch === "[") depth++;
+      if (ch === "}" || ch === "]") {
+        depth--;
+        // depth 1 means we just closed a top-level array element (inside the outer [])
+        if (depth === 1) topLevelClosePositions.push(i);
+      }
+    }
+
+    // Try from the last complete top-level element backwards
+    for (let k = topLevelClosePositions.length - 1; k >= 0; k--) {
+      const pos = topLevelClosePositions[k];
+      const candidate = str.slice(0, pos + 1) + "]";
+      try {
+        JSON.parse(candidate);
+        console.log(`[repairJson] Recovered ${k + 1} complete elements from truncated array`);
+        return candidate;
+      } catch {
+        // Try next position
+      }
+    }
+  }
+
+  // Strategy 2: Remove trailing comma and try closing brackets
   str = str.replace(/,\s*$/, "");
 
-  // Remove incomplete last element (e.g., truncated string or object)
-  // Find the last complete element by looking for the last },
   const lastCompleteComma = str.lastIndexOf("},");
   const lastCompleteBracket = str.lastIndexOf("}]");
 
   if (lastCompleteBracket !== -1) {
-    // Already has a closing, try trimming after it
     const candidate = str.slice(0, lastCompleteBracket + 2);
     try {
       JSON.parse(candidate);
@@ -59,7 +93,6 @@ function repairTruncatedJson(json: string): string {
   }
 
   if (lastCompleteComma !== -1) {
-    // Truncate to last complete object and close the array
     const candidate = str.slice(0, lastCompleteComma + 1) + "]";
     try {
       JSON.parse(candidate);
@@ -69,7 +102,7 @@ function repairTruncatedJson(json: string): string {
     }
   }
 
-  // Brute force: count unclosed brackets and close them
+  // Strategy 3: Brute force — count unclosed brackets and close them
   let openBraces = 0;
   let openBrackets = 0;
   let inString = false;
@@ -101,7 +134,8 @@ async function callClaude<T>(
   systemPrompt: string,
   userPrompt: string,
   onProgress: ProgressCallback,
-  maxTokens: number = 8192
+  maxTokens: number = 8192,
+  timeoutMs: number = 90_000
 ): Promise<T> {
   const client = getAnthropicClient();
 
@@ -114,7 +148,7 @@ async function callClaude<T>(
       system: systemPrompt,
       messages: [{ role: "user", content: userPrompt }],
     },
-    { signal: AbortSignal.timeout(60_000) }
+    { signal: AbortSignal.timeout(timeoutMs) }
   );
 
   onProgress("Parsing response...");
@@ -139,17 +173,18 @@ async function callClaude<T>(
     }
   }
 
-  // Try parsing, and if it fails due to truncation, attempt repair
+  // Try parsing, and if it fails, always attempt JSON repair
+  // (response may be truncated even without max_tokens stop_reason)
   try {
     return JSON.parse(jsonStr) as T;
   } catch {
-    const wasTruncated = response.stop_reason === "max_tokens";
-    if (wasTruncated) {
-      console.log(`[callClaude] Response truncated at max_tokens, attempting JSON repair...`);
+    console.log(`[callClaude] JSON parse failed (stop_reason: ${response.stop_reason}, length: ${jsonStr.length}), attempting repair...`);
+    try {
       const repaired = repairTruncatedJson(jsonStr);
       return JSON.parse(repaired) as T;
+    } catch {
+      throw new Error(`Failed to parse Claude response as JSON: ${jsonStr.slice(0, 200)}...`);
     }
-    throw new Error(`Failed to parse Claude response as JSON: ${jsonStr.slice(0, 200)}...`);
   }
 }
 
@@ -333,5 +368,5 @@ ${analyses.complexitySnapshots.map((s) => `- ${s.date}: ${s.totalFiles} files, h
   const userPrompt = `Write the narrative for this project based on ${commits.length} commits and the analysis below:\n\n${analysisContext}\n\nCOMMIT LOG:\n${formatCommitsForPrompt(commits.slice(0, 100))}`;
 
   onProgress("Writing documentary-style era narratives...");
-  return callClaude<Narrative[]>(systemPrompt, userPrompt, onProgress);
+  return callClaude<Narrative[]>(systemPrompt, userPrompt, onProgress, 16384, 120_000);
 }

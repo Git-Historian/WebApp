@@ -125,6 +125,10 @@ export async function runPipeline(
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Narrative agent failed";
+    console.error(`[pipeline] Narrative writer FAILED: ${message}`);
+    if (err instanceof Error && err.stack) {
+      console.error(`[pipeline] Stack: ${err.stack.split('\n').slice(0, 3).join(' | ')}`);
+    }
     emit(onEvent, {
       type: "error",
       agent: "narrative-writer",
@@ -132,7 +136,15 @@ export async function runPipeline(
     });
   }
 
-  console.log(`[pipeline] Phase 2 (narrative) completed in ${Date.now() - pipelineStart}ms`);
+  console.log(`[pipeline] Phase 2 (narrative) completed in ${Date.now() - pipelineStart}ms, narratives: ${narratives.length}`);
+  // Debug: log what the narrative writer actually returned
+  if (narratives.length > 0) {
+    const firstNarrative = narratives[0];
+    console.log(`[pipeline] Narrative sample — era: "${firstNarrative.eraTitle}", milestoneStories keys: ${firstNarrative.milestoneStories ? Object.keys(firstNarrative.milestoneStories).join(', ') : 'NONE'}, commitStories keys: ${firstNarrative.commitStories ? Object.keys(firstNarrative.commitStories).length + ' hashes' : 'NONE'}`);
+    // Log all milestoneStories keys across all narratives
+    const allMSKeys = narratives.flatMap(n => n.milestoneStories ? Object.keys(n.milestoneStories) : []);
+    console.log(`[pipeline] All milestoneStories keys (${allMSKeys.length}): ${allMSKeys.slice(0, 10).join(', ')}${allMSKeys.length > 10 ? '...' : ''}`);
+  }
 
   const pipelineResult: PipelineResult = {
     commitAnalysis,
