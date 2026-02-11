@@ -25,6 +25,55 @@ function formatCommitsForPrompt(commits: RawCommit[]): string {
 }
 
 /**
+ * Sanitize a JSON string by removing/escaping control characters that
+ * Claude sometimes emits inside string values (literal newlines, tabs, etc.).
+ * JSON.parse is strict: control chars 0x00-0x1F must be escaped inside strings.
+ */
+function sanitizeJsonString(json: string): string {
+  // Replace control characters inside JSON string values.
+  // Walk character by character, tracking whether we're inside a JSON string.
+  let result = "";
+  let inStr = false;
+  let escaped = false;
+
+  for (let i = 0; i < json.length; i++) {
+    const ch = json[i];
+    const code = json.charCodeAt(i);
+
+    if (escaped) {
+      result += ch;
+      escaped = false;
+      continue;
+    }
+
+    if (ch === "\\" && inStr) {
+      result += ch;
+      escaped = true;
+      continue;
+    }
+
+    if (ch === '"') {
+      inStr = !inStr;
+      result += ch;
+      continue;
+    }
+
+    // If inside a string and it's a control character, escape it
+    if (inStr && code < 0x20) {
+      if (code === 0x0a) result += "\\n";       // newline
+      else if (code === 0x0d) result += "\\r";   // carriage return
+      else if (code === 0x09) result += "\\t";   // tab
+      else result += `\\u${code.toString(16).padStart(4, "0")}`;
+      continue;
+    }
+
+    result += ch;
+  }
+
+  return result;
+}
+
+/**
  * Attempt to repair truncated JSON arrays by closing open brackets/braces.
  * Handles the common case where Claude's response gets cut off at max_tokens.
  */
@@ -173,12 +222,23 @@ async function callClaude<T>(
     }
   }
 
+  // Sanitize: remove control characters that can break JSON.parse
+  // (Claude sometimes emits literal tabs/newlines inside string values)
+  jsonStr = sanitizeJsonString(jsonStr);
+
   // Try parsing, and if it fails, always attempt JSON repair
   // (response may be truncated even without max_tokens stop_reason)
   try {
     return JSON.parse(jsonStr) as T;
-  } catch {
-    console.log(`[callClaude] JSON parse failed (stop_reason: ${response.stop_reason}, length: ${jsonStr.length}), attempting repair...`);
+  } catch (firstErr) {
+    const errMsg = firstErr instanceof Error ? firstErr.message : String(firstErr);
+    console.log(`[callClaude] JSON parse failed (stop_reason: ${response.stop_reason}, length: ${jsonStr.length}): ${errMsg}`);
+    // Log the area around the error position if available
+    const posMatch = errMsg.match(/position (\d+)/);
+    if (posMatch) {
+      const pos = Number(posMatch[1]);
+      console.log(`[callClaude] JSON error context: ...${jsonStr.slice(Math.max(0, pos - 40), pos)}<<<HERE>>>${jsonStr.slice(pos, pos + 40)}...`);
+    }
     try {
       const repaired = repairTruncatedJson(jsonStr);
       return JSON.parse(repaired) as T;
