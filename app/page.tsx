@@ -220,18 +220,20 @@ export default function LandingPage() {
                             : "hover:bg-[color:var(--hover-row,transparent)]"
                         }`}
                       >
-                        <span
-                          className={`text-13 font-medium block ${
-                            selectedSlug === repo.slug
-                              ? "text-[color:var(--theme-accent)]"
-                              : "text-[color:var(--color-high-contrast)]"
-                          }`}
-                        >
-                          {repo.label}
-                        </span>
-                        <span className="text-12 text-[color:var(--color-gray9)] mt-0.5 block">
-                          {repo.description}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`text-13 font-medium ${
+                              selectedSlug === repo.slug
+                                ? "text-[color:var(--theme-accent)]"
+                                : "text-[color:var(--color-high-contrast)]"
+                            }`}
+                          >
+                            {repo.label}
+                          </span>
+                          <span className="text-12 text-[color:var(--color-gray9)]">
+                            {repo.description}
+                          </span>
+                        </div>
                       </li>
                     ))}
                   </motion.ul>
