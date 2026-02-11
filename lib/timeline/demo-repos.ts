@@ -68,7 +68,7 @@ const PORTFOLIO_RAW: TimelineData = [
     variant: "large",
     title: "Slide-based case study architecture",
     narrative:
-      "Case studies became full-screen presentations with keyboard and scroll navigation. Each slide is its own universe — complete with minimap dots and transitions smoother than a conference keynote.",
+      "Case studies became full-screen presentations with keyboard and scroll navigation. Each slide is its own universe \u2014 complete with minimap dots and transitions smoother than a conference keynote.",
     category: "architecture",
     commits: [
       {
@@ -96,7 +96,7 @@ const PORTFOLIO_RAW: TimelineData = [
     variant: "medium",
     title: "First case study: Luma design system",
     narrative:
-      "The first case study to battle-test the slide architecture. Luma's design system got the full treatment — rich visuals, interactive components, and that satisfying feeling of dogfooding your own framework.",
+      "The first case study to battle-test the slide architecture. Luma's design system got the full treatment \u2014 rich visuals, interactive components, and that satisfying feeling of dogfooding your own framework.",
     category: "content",
   },
   {
@@ -116,7 +116,7 @@ const PORTFOLIO_RAW: TimelineData = [
     variant: "large",
     title: "Migration from SPA to MPA with Vite",
     narrative:
-      "The great migration. Single-page app became multi-page overnight. Each case study got its own HTML entry point — better load times, better SEO, and the router finally stopped having an identity crisis.",
+      "The great migration. Single-page app became multi-page overnight. Each case study got its own HTML entry point \u2014 better load times, better SEO, and the router finally stopped having an identity crisis.",
     category: "architecture",
     architectureNote:
       "Moved from SPA with React Router to Vite MPA with rollupOptions.input entries per page.",
@@ -179,7 +179,7 @@ const PORTFOLIO_RAW: TimelineData = [
     variant: "medium",
     title: "Sponsorship platform case study",
     narrative:
-      "SponsorBase got the slide treatment — a deep dive into building a sponsorship matching platform. Complex data flows, beautiful dashboards, and the eternal question: 'can we make this more visual?'",
+      "SponsorBase got the slide treatment \u2014 a deep dive into building a sponsorship matching platform. Complex data flows, beautiful dashboards, and the eternal question: 'can we make this more visual?'",
     category: "content",
   },
   {
@@ -199,7 +199,7 @@ const PORTFOLIO_RAW: TimelineData = [
     variant: "medium",
     title: "Comprehensive sitemap and meta tags",
     narrative:
-      "The unglamorous but essential work. Sitemap generation, meta tags, OpenGraph images — everything Google needs to actually know this site exists. Turns out 'build it and they will come' requires an XML file.",
+      "The unglamorous but essential work. Sitemap generation, meta tags, OpenGraph images \u2014 everything Google needs to actually know this site exists. Turns out 'build it and they will come' requires an XML file.",
     category: "infrastructure",
     commits: [
       {
@@ -224,364 +224,363 @@ const PORTFOLIO_RAW: TimelineData = [
   },
 ];
 
-// ─── Next.js (fictional timeline) ────────────────────────────────────
-const NEXTJS_RAW: TimelineData = [
+// ─── SponsorBase ─────────────────────────────────────────────────────
+const SPONSORBASE_RAW: TimelineData = [
   {
-    name: "Birth of Next",
-    year: 2016,
+    name: "Project Init",
+    year: 2024,
     degree: 0,
     variant: "large",
-    title: "Initial release: React framework with SSR built-in",
+    title: "SponsorBase monorepo scaffolded with Next.js + Supabase",
     narrative:
-      "Guillermo Rauch looked at Create React App and thought 'we can do better.' Seven files, zero config, and server-side rendering out of the box. The React ecosystem would never be the same.",
+      "A sponsorship platform born from the simple question: 'Why is finding sponsors still done over email chains?' Next.js for the frontend, Supabase for the backend, and blind optimism for everything else.",
     category: "foundation",
     commits: [
       {
-        hash: "f1a2b3c",
-        author: "Guillermo Rauch",
-        date: "2016-10-25",
-        message: "Initial commit",
-        insertions: 3241,
+        hash: "sb01a1b",
+        author: "Edward Guillen",
+        date: "2024-01-10",
+        message: "Initial monorepo scaffold with Next.js App Router + Supabase",
+        insertions: 1842,
         deletions: 0,
       },
     ],
   },
   {
-    name: "Dynamic Import",
-    year: 2017,
+    name: "Auth Flow",
+    year: 2024,
     degree: 0,
     variant: "medium",
-    title: "next/dynamic for code splitting",
+    title: "Supabase Auth with magic links and OAuth",
     narrative:
-      "Code splitting arrived with a single function call. Lazy-load any component, show a fallback, ship less JavaScript. Bundle sizes everywhere breathed a collective sigh of relief.",
-    category: "feature",
-  },
-  {
-    name: "Custom Server",
-    year: 2017,
-    degree: 0,
-    variant: "medium",
-    title: "Custom server API with Express compatibility",
-    narrative:
-      "For the control freaks who need their own Express middleware. Next.js said 'fine, bring your own server' and somehow made it feel like a feature, not a workaround.",
-    category: "architecture",
-  },
-  {
-    name: "Static Export",
-    year: 2018,
-    degree: 0,
-    variant: "large",
-    title: "next export for fully static sites",
-    narrative:
-      "SSR framework goes static. `next export` turned any Next.js app into a folder of HTML files you could host on a napkin. The JAMstack crowd went wild.",
+      "Magic links, Google OAuth, and a password-free experience because nobody remembers their password anyway. The auth flow was polished until logging in felt like walking through an automatic door.",
     category: "feature",
     commits: [
       {
-        hash: "d4e5f6a",
-        author: "Tim Neutkens",
-        date: "2018-03-14",
-        message: "Add next export command",
-        insertions: 892,
-        deletions: 34,
+        hash: "sb02c3d",
+        author: "Edward Guillen",
+        date: "2024-02-05",
+        message: "Implement Supabase auth with magic links and Google OAuth",
+        insertions: 634,
+        deletions: 12,
       },
     ],
   },
   {
-    name: "API Routes",
-    year: 2019,
-    degree: 0,
-    variant: "large",
-    title: "Serverless API routes in pages/api",
-    narrative:
-      "Full-stack in one repo. Drop a file in `pages/api/` and boom — serverless endpoint. Backend developers felt a disturbance in the force. Frontend devs felt liberated.",
-    category: "architecture",
-    architectureNote: "Each file in pages/api/ becomes a serverless function automatically.",
-  },
-  {
-    name: "getStaticProps",
-    year: 2020,
-    degree: 0,
-    variant: "large",
-    title: "Data fetching revolution with getStaticProps/getServerSideProps",
-    narrative:
-      "The great data fetching rethink. Two functions to rule them all: `getStaticProps` for build-time, `getServerSideProps` for request-time. Suddenly, fetching data in React wasn't a philosophical debate anymore.",
-    category: "feature",
-    commits: [
-      {
-        hash: "a7b8c9d",
-        author: "Tim Neutkens",
-        date: "2020-03-10",
-        message: "Implement getStaticProps and getServerSideProps",
-        insertions: 2847,
-        deletions: 1203,
-      },
-    ],
-  },
-  {
-    name: "Image Optim",
-    year: 2020,
-    degree: 0,
-    variant: "medium",
-    title: "next/image with automatic optimization",
-    narrative:
-      "Images finally got first-class treatment. Automatic resizing, lazy loading, blur placeholders, and WebP conversion. Your Lighthouse score just went up 20 points without changing a line of code.",
-    category: "performance",
-  },
-  {
-    name: "Middleware",
-    year: 2021,
-    degree: 0,
-    variant: "medium",
-    title: "Edge middleware for request interception",
-    narrative:
-      "Code that runs before the page loads, at the edge, in milliseconds. Authentication, redirects, A/B testing — all handled before your React component even knows what hit it.",
-    category: "architecture",
-  },
-  {
-    name: "App Router",
-    year: 2023,
-    degree: 0,
-    variant: "large",
-    title: "App Router with React Server Components",
-    narrative:
-      "The biggest architectural shift since Next.js was born. React Server Components, nested layouts, streaming, and a file-system router that makes `pages/` look like a quaint village. Love it or hate it, this is the future.",
-    category: "architecture",
-    architectureNote: "Complete paradigm shift: pages/ → app/, getServerSideProps → async components.",
-    commits: [
-      {
-        hash: "e1f2g3h",
-        author: "Tim Neutkens",
-        date: "2023-05-04",
-        message: "Stable App Router release",
-        insertions: 48291,
-        deletions: 12847,
-      },
-    ],
-  },
-  {
-    name: "Server Actions",
-    year: 2023,
-    degree: 0,
-    variant: "medium",
-    title: "Server Actions for form mutations",
-    narrative:
-      "Write a function, add 'use server', call it from a form. Your mutation runs server-side. No API route, no fetch call, no state management. Is this magic? No, it's just really good DX.",
-    category: "feature",
-  },
-  {
-    name: "Turbopack",
+    name: "Sponsor Profiles",
     year: 2024,
     degree: 0,
     variant: "large",
-    title: "Turbopack replaces Webpack as default bundler",
+    title: "Sponsor profile builder with media uploads",
     narrative:
-      "Webpack had a good run. Turbopack enters in Rust, promising 700x faster cold starts (citation needed, but it IS fast). Dev server starts before you finish pressing Enter.",
-    category: "performance",
+      "Sponsors got their own profile builder \u2014 logo uploads, budget ranges, target audience tags, and a bio field that nobody writes more than two sentences in. The UI makes it look like they wrote a novel.",
+    category: "feature",
+  },
+  {
+    name: "Event Dashboard",
+    year: 2024,
+    degree: 0,
+    variant: "large",
+    title: "Event organizer dashboard with real-time metrics",
+    narrative:
+      "The dashboard where event organizers watch sponsorship proposals roll in like a stock ticker. Real-time updates via Supabase subscriptions, filterable cards, and that dopamine hit of a new match notification.",
+    category: "feature",
     commits: [
       {
-        hash: "i4j5k6l",
-        author: "Tobias Koppers",
-        date: "2024-10-21",
-        message: "Enable Turbopack as default dev bundler",
-        insertions: 3421,
-        deletions: 8923,
+        hash: "sb04e5f",
+        author: "Edward Guillen",
+        date: "2024-04-18",
+        message: "Build event organizer dashboard with real-time Supabase subscriptions",
+        insertions: 2341,
+        deletions: 187,
       },
     ],
   },
   {
-    name: "PPR",
+    name: "Matching Engine",
+    year: 2024,
+    degree: 0,
+    variant: "large",
+    title: "AI-powered sponsor-event matching algorithm",
+    narrative:
+      "The secret sauce. An algorithm that matches sponsors to events based on audience overlap, budget fit, and industry alignment. It's like a dating app, but for brands and conferences. Swipe right on ROI.",
+    category: "architecture",
+    architectureNote: "Edge function runs matching algorithm on Supabase cron, scores stored in materialized view.",
+  },
+  {
+    name: "Proposal Flow",
+    year: 2024,
+    degree: 0,
+    variant: "medium",
+    title: "Sponsorship proposal and negotiation system",
+    narrative:
+      "A structured proposal flow that replaced the chaos of back-and-forth emails. Templates, tier selection, counter-offers \u2014 all tracked in one place. Negotiation became a UI problem, not a patience problem.",
+    category: "feature",
+    commits: [
+      {
+        hash: "sb06g7h",
+        author: "Edward Guillen",
+        date: "2024-06-22",
+        message: "Implement proposal creation and negotiation workflow",
+        insertions: 1567,
+        deletions: 234,
+      },
+    ],
+  },
+  {
+    name: "Payment Integration",
+    year: 2024,
+    degree: 0,
+    variant: "medium",
+    title: "Stripe Connect for sponsor payments",
+    narrative:
+      "Stripe Connect entered the building and suddenly money could actually change hands. Split payments, automatic invoicing, and the peace of mind that comes from not building your own payment system.",
+    category: "infrastructure",
+  },
+  {
+    name: "Analytics",
+    year: 2024,
+    degree: 0,
+    variant: "medium",
+    title: "Sponsorship ROI analytics dashboard",
+    narrative:
+      "Charts, graphs, and the numbers sponsors actually care about: impressions, engagement, cost-per-interaction. Built with Recharts because sponsors love a good bar graph more than they love a good keynote.",
+    category: "feature",
+    commits: [
+      {
+        hash: "sb08i9j",
+        author: "Edward Guillen",
+        date: "2024-08-15",
+        message: "Add ROI analytics dashboard with Recharts visualizations",
+        insertions: 892,
+        deletions: 45,
+      },
+    ],
+  },
+  {
+    name: "Email System",
     year: 2025,
     degree: 0,
     variant: "medium",
-    title: "Partial Prerendering for hybrid static/dynamic",
+    title: "Transactional emails with React Email + Resend",
     narrative:
-      "The best of both worlds: static shells with dynamic holes. Your page loads instantly from the CDN, then streams in the personalized bits. It's like having your cake, eating it, and the cake loads in 50ms.",
-    category: "feature",
+      "Beautiful transactional emails that people actually read. React Email for templating, Resend for delivery, and the restraint to not add 'Sent from SponsorBase' to every footer.",
+    category: "infrastructure",
+  },
+  {
+    name: "Mobile Responsive",
+    year: 2025,
+    degree: 0,
+    variant: "medium",
+    title: "Full mobile responsive overhaul",
+    narrative:
+      "The dashboard that was 'mostly mobile-friendly' became 'actually mobile-friendly.' Every table became a card, every sidebar became a drawer, and every sponsor could finally close deals from their phone.",
+    category: "design",
+    commits: [
+      {
+        hash: "sb10k1l",
+        author: "Edward Guillen",
+        date: "2025-01-20",
+        message: "Complete mobile responsive overhaul for all dashboard views",
+        insertions: 1234,
+        deletions: 678,
+      },
+    ],
+  },
+  {
+    name: "Public API",
+    year: 2025,
+    degree: 0,
+    variant: "large",
+    title: "Public REST API for third-party integrations",
+    narrative:
+      "SponsorBase opened its doors to the world with a public API. Event platforms, CRM tools, and that one guy who built a Slack bot for sponsorship alerts. Rate-limited, documented, and actually tested.",
+    category: "architecture",
+    architectureNote: "OpenAPI 3.1 spec auto-generated from Zod schemas. Rate limiting via Upstash Redis.",
   },
 ];
 
-// ─── React (fictional timeline) ──────────────────────────────────────
-const REACT_RAW: TimelineData = [
+// ─── Luma ────────────────────────────────────────────────────────────
+const LUMA_RAW: TimelineData = [
   {
-    name: "Open Source",
-    year: 2013,
-    degree: 0,
-    variant: "large",
-    title: "React open-sourced at JSConf US",
-    narrative:
-      "Jordan Walke walks on stage and shows the world a library that re-renders everything on every state change. The audience is confused. The audience is intrigued. The audience has no idea they're watching history.",
-    category: "foundation",
-    commits: [
-      {
-        hash: "75897d5",
-        author: "Jordan Walke",
-        date: "2013-05-29",
-        message: "Initial public release",
-        insertions: 14923,
-        deletions: 0,
-      },
-    ],
-  },
-  {
-    name: "JSX",
-    year: 2013,
-    degree: 0,
-    variant: "medium",
-    title: "JSX transform for HTML-in-JavaScript",
-    narrative:
-      "'You put HTML in your JavaScript?!' — every developer in 2013. 'Yes, and it's beautiful' — every developer by 2015. JSX was controversial for exactly as long as it took people to actually try it.",
-    category: "feature",
-  },
-  {
-    name: "Virtual DOM",
-    year: 2014,
-    degree: 0,
-    variant: "large",
-    title: "Virtual DOM diffing algorithm",
-    narrative:
-      "The reconciliation algorithm that launched a thousand Medium articles. Diff the virtual tree, compute minimal DOM updates, batch them. It sounds simple because the hard part is invisible.",
-    category: "architecture",
-    architectureNote: "O(n) tree diffing via heuristic two-pass algorithm instead of O(n³) general solution.",
-  },
-  {
-    name: "Class Components",
-    year: 2015,
-    degree: 0,
-    variant: "medium",
-    title: "ES6 class syntax replaces createClass",
-    narrative:
-      "React.createClass got a retirement party. ES6 classes moved in. `this.state`, `this.setState`, and the eternal question: 'do I need to bind this method in the constructor?'",
-    category: "feature",
-  },
-  {
-    name: "React Native",
-    year: 2015,
-    degree: 0,
-    variant: "large",
-    title: "React Native for mobile development",
-    narrative:
-      "'Learn once, write anywhere.' Not 'write once, run anywhere' — they were careful with that wording. React Native brought component thinking to iOS and Android, and suddenly every web dev was a mobile dev (sort of).",
-    category: "architecture",
-    commits: [
-      {
-        hash: "m7n8o9p",
-        author: "Christopher Chedeau",
-        date: "2015-03-26",
-        message: "Open source React Native",
-        insertions: 68421,
-        deletions: 0,
-      },
-    ],
-  },
-  {
-    name: "Fiber",
-    year: 2017,
-    degree: 0,
-    variant: "large",
-    title: "React Fiber: complete reconciler rewrite",
-    narrative:
-      "Two years of work. A complete rewrite of React's core reconciliation engine. Fiber made rendering interruptible, pausable, and resumable. Users saw smoother UIs. Developers saw a 12,000-line PR.",
-    category: "architecture",
-    architectureNote: "Replaced stack-based synchronous reconciler with fiber-based incremental engine.",
-    commits: [
-      {
-        hash: "q1r2s3t",
-        author: "Andrew Clark",
-        date: "2017-09-26",
-        message: "React 16: Fiber reconciler",
-        insertions: 23847,
-        deletions: 18293,
-      },
-    ],
-  },
-  {
-    name: "Hooks",
-    year: 2019,
-    degree: 0,
-    variant: "large",
-    title: "Hooks: useState, useEffect, and the end of class components",
-    narrative:
-      "Sophie Alpert and Dan Abramov introduced Hooks and the React world split into before and after. No more `this`, no more lifecycle spaghetti, no more HOC wrapper hell. Just functions all the way down.",
-    category: "feature",
-    commits: [
-      {
-        hash: "u4v5w6x",
-        author: "Dan Abramov",
-        date: "2019-02-06",
-        message: "React 16.8: Hooks stable release",
-        insertions: 8421,
-        deletions: 923,
-      },
-    ],
-  },
-  {
-    name: "Concurrent",
-    year: 2022,
-    degree: 0,
-    variant: "large",
-    title: "Concurrent features and automatic batching",
-    narrative:
-      "React 18 arrived with concurrent rendering — the promise Fiber made five years earlier, finally delivered. `startTransition`, automatic batching, and the controversial `<StrictMode>` double-render that made everyone's effects run twice.",
-    category: "feature",
-    commits: [
-      {
-        hash: "y7z8a9b",
-        author: "React Team",
-        date: "2022-03-29",
-        message: "React 18.0 stable",
-        insertions: 12847,
-        deletions: 6421,
-      },
-    ],
-  },
-  {
-    name: "Server Comp",
+    name: "Luma Genesis",
     year: 2023,
     degree: 0,
     variant: "large",
-    title: "React Server Components",
+    title: "Luma design system initialized from Figma tokens",
     narrative:
-      "Components that run on the server and send HTML, not JavaScript. Zero bundle size for server components. The community had opinions. Many opinions. Several blog posts were written.",
+      "It started with a Figma file and a dream. 200+ design tokens exported, a component library bootstrapped, and the bold declaration: 'We will never argue about button padding again.'",
+    category: "foundation",
+    commits: [
+      {
+        hash: "lm01a1b",
+        author: "Edward Guillen",
+        date: "2023-03-15",
+        message: "Initialize Luma design system with Figma token export",
+        insertions: 2341,
+        deletions: 0,
+      },
+    ],
+  },
+  {
+    name: "Token Pipeline",
+    year: 2023,
+    degree: 0,
+    variant: "medium",
+    title: "Automated Figma-to-code token pipeline",
+    narrative:
+      "A pipeline that syncs Figma tokens to CSS variables automatically. Change a color in Figma, push to main, see it in production. The designer-developer handoff problem, solved with a GitHub Action.",
+    category: "infrastructure",
+    commits: [
+      {
+        hash: "lm02c3d",
+        author: "Edward Guillen",
+        date: "2023-04-10",
+        message: "Build Figma-to-CSS token sync pipeline via GitHub Actions",
+        insertions: 567,
+        deletions: 23,
+      },
+    ],
+  },
+  {
+    name: "Core Components",
+    year: 2023,
+    degree: 0,
+    variant: "large",
+    title: "Button, Input, Card \u2014 the holy trinity",
+    narrative:
+      "Every design system starts with three components and the delusion that 'this will be quick.' Button took a week. Input took two. Card took three and a therapy session about border-radius.",
+    category: "feature",
+  },
+  {
+    name: "Theme Engine",
+    year: 2023,
+    degree: 0,
+    variant: "large",
+    title: "Multi-theme engine with dark mode and brand variants",
+    narrative:
+      "One design system, infinite themes. Dark mode, light mode, and custom brand palettes all driven by CSS custom properties. Switching themes became a one-liner. The CSS-in-JS crowd wept.",
     category: "architecture",
-    architectureNote: "Server Components run only on the server, Client Components hydrate on the client.",
+    architectureNote: "Theme switching via data-theme attribute on <html>. Zero JS runtime for theme application.",
+    commits: [
+      {
+        hash: "lm04e5f",
+        author: "Edward Guillen",
+        date: "2023-07-20",
+        message: "Implement multi-theme engine with CSS custom property layers",
+        insertions: 1892,
+        deletions: 432,
+      },
+    ],
   },
   {
-    name: "use() Hook",
+    name: "Docs Site",
+    year: 2023,
+    degree: 0,
+    variant: "medium",
+    title: "Interactive documentation with live code playgrounds",
+    narrative:
+      "Documentation nobody will read unless it has live examples. So every component got a playground, every token got a swatch, and every page got a 'Copy to clipboard' button that actually works.",
+    category: "content",
+  },
+  {
+    name: "Form System",
+    year: 2024,
+    degree: 0,
+    variant: "large",
+    title: "Composable form system with validation",
+    narrative:
+      "Forms: the final boss of UI development. A composable form system with Zod validation, accessible error messages, and the radical idea that form fields should actually look consistent across the app.",
+    category: "feature",
+    commits: [
+      {
+        hash: "lm06g7h",
+        author: "Edward Guillen",
+        date: "2024-01-15",
+        message: "Build composable form system with Zod schema validation",
+        insertions: 2134,
+        deletions: 345,
+      },
+    ],
+  },
+  {
+    name: "Data Tables",
     year: 2024,
     degree: 0,
     variant: "medium",
-    title: "The use() hook for promises and context",
+    title: "Sortable, filterable data table component",
     narrative:
-      "A hook that reads promises. Just `use(fetchData())` and React suspends until it resolves. No useEffect, no loading state, no race conditions. It's almost suspiciously simple.",
+      "A data table component that handles sorting, filtering, pagination, and column resizing without making you want to rewrite it from scratch. Built on TanStack Table because reinventing the wheel is for tires, not tables.",
     category: "feature",
   },
   {
-    name: "Actions",
+    name: "Animation Kit",
     year: 2024,
     degree: 0,
     variant: "medium",
-    title: "Form Actions and useActionState",
+    title: "Motion primitives and transition presets",
     narrative:
-      "Forms got a React-native API. `useActionState` handles the whole submit → pending → result lifecycle. Combined with Server Actions, it's the most ergonomic form handling React has ever had.",
-    category: "feature",
+      "A curated set of animation primitives \u2014 fade, slide, scale, stagger \u2014 all with consistent easing and duration tokens. Every transition in the system now speaks the same visual language.",
+    category: "interaction",
+    commits: [
+      {
+        hash: "lm08i9j",
+        author: "Edward Guillen",
+        date: "2024-05-10",
+        message: "Add motion primitives with spring and easing presets",
+        insertions: 678,
+        deletions: 89,
+      },
+    ],
   },
   {
-    name: "React Compiler",
+    name: "A11y Audit",
+    year: 2024,
+    degree: 0,
+    variant: "medium",
+    title: "Full WCAG 2.1 AA accessibility audit and fixes",
+    narrative:
+      "Every component tested with screen readers, keyboard navigation, and color contrast checkers. 47 issues found. 47 issues fixed. The design system went from 'probably accessible' to 'actually accessible.'",
+    category: "infrastructure",
+  },
+  {
+    name: "Icon System",
+    year: 2024,
+    degree: 0,
+    variant: "medium",
+    title: "Tree-shakeable icon library with 200+ icons",
+    narrative:
+      "200 icons, zero unused bytes. A tree-shakeable icon system where you import only what you use. The bundle size police approved. Every icon pixel-aligned to a 24x24 grid because chaos is for art, not UIs.",
+    category: "design",
+    commits: [
+      {
+        hash: "lm10k1l",
+        author: "Edward Guillen",
+        date: "2024-08-01",
+        message: "Launch tree-shakeable icon library with 200+ aligned icons",
+        insertions: 4521,
+        deletions: 123,
+      },
+    ],
+  },
+  {
+    name: "v2 Launch",
     year: 2025,
     degree: 0,
     variant: "large",
-    title: "React Compiler auto-memoizes everything",
+    title: "Luma v2: complete rewrite with React Server Components",
     narrative:
-      "The compiler that makes `useMemo` and `useCallback` obsolete. React analyzes your code at build time and inserts memoization automatically. Years of 'you forgot to memoize' code review comments — gone.",
-    category: "performance",
+      "Luma v2 \u2014 the one where everything was rewritten because v1 taught you what not to do. React Server Components, streaming SSR, and a 60% reduction in client-side JavaScript. The glow-up was real.",
+    category: "architecture",
+    architectureNote: "Full RSC migration. Client components reduced from 89 to 34. Bundle size down 60%.",
     commits: [
       {
-        hash: "c1d2e3f",
-        author: "React Team",
-        date: "2025-04-14",
-        message: "React Compiler stable release",
-        insertions: 42891,
-        deletions: 3241,
+        hash: "lm11m2n",
+        author: "Edward Guillen",
+        date: "2025-01-15",
+        message: "Luma v2 stable release: RSC migration complete",
+        insertions: 12847,
+        deletions: 8923,
       },
     ],
   },
@@ -592,24 +591,24 @@ const REACT_RAW: TimelineData = [
 export const DEMO_REPOS: DemoRepo[] = [
   {
     slug: "edwardguillen-portfolio",
-    label: "Edward's Portfolio",
-    repoName: "edwardguillen/portfolio",
+    label: "Edward\u2019s Portfolio",
+    repoName: "helloluma/edwardguillen",
     description: "Personal design portfolio \u2014 Vite + React",
     timeline: transformData([...PORTFOLIO_RAW]),
   },
   {
-    slug: "vercel-nextjs",
-    label: "Next.js",
-    repoName: "vercel/next.js",
-    description: "The React framework for the web",
-    timeline: transformData([...NEXTJS_RAW]),
+    slug: "sponsorbase",
+    label: "SponsorBase",
+    repoName: "SponsorBase/Web-App",
+    description: "Sponsorship matching platform \u2014 Next.js + Supabase",
+    timeline: transformData([...SPONSORBASE_RAW]),
   },
   {
-    slug: "facebook-react",
-    label: "React",
-    repoName: "facebook/react",
-    description: "A library for building user interfaces",
-    timeline: transformData([...REACT_RAW]),
+    slug: "luma-design-system",
+    label: "Luma",
+    repoName: "Luma-Comply/Web-App",
+    description: "Enterprise design system \u2014 React + Tokens",
+    timeline: transformData([...LUMA_RAW]),
   },
 ];
 
