@@ -1,13 +1,13 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { AgentGrid } from "@/components/analysis/agent-grid";
-import { useAnalysisStream } from "@/hooks/use-analysis-stream";
+import { useFakeAnalysis } from "@/hooks/use-fake-analysis";
+import { getDemoRepo } from "@/lib/timeline/demo-repos";
 import { useSounds } from "@/components/shared/sound-provider";
-import type { RawCommit } from "@/lib/git/types";
 type Phase = "cloning" | "analyzing" | "transitioning";
 
 export default function AnalyzePageWrapper() {
@@ -27,60 +27,36 @@ export default function AnalyzePageWrapper() {
 function AnalyzePage() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const repo = searchParams.get("repo") ?? "";
+  const demoSlug = searchParams.get("demo") ?? "";
+  const demoRepo = getDemoRepo(demoSlug);
+  const repoName = demoRepo?.repoName ?? "";
+
   const { agents, isComplete, timelineId, error, startAnalysis } =
-    useAnalysisStream();
+    useFakeAnalysis();
   const { playSwoosh } = useSounds();
 
   const [phase, setPhase] = useState<Phase>("cloning");
   const [extractError, setExtractError] = useState<string | null>(null);
   const startedRef = useRef(false);
 
-  const repoName = repo.replace(/^https?:\/\/(www\.)?github\.com\//, "").replace(/\.git$/, "");
-
-  const extract = useCallback(async () => {
-    if (!repo) {
-      setExtractError("No repository URL provided. Add ?repo= to the URL.");
-      return;
-    }
-
-    try {
-      const res = await fetch("/api/extract", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: repo }),
-      });
-
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(
-          (body as { error?: string }).error ?? `Extract failed (${res.status})`
-        );
-      }
-
-      const { commits } = (await res.json()) as { commits: RawCommit[] };
-
-      if (commits.length < 5) {
-        throw new Error(
-          `This repo only has ${commits.length} commit${commits.length === 1 ? "" : "s"}. Git Historian needs at least 5 commits to build a meaningful timeline.`
-        );
-      }
-
-      setPhase("analyzing");
-      startAnalysis(commits, repoName, repo);
-    } catch (err: unknown) {
-      setExtractError(
-        err instanceof Error ? err.message : "Failed to extract repository"
-      );
-    }
-  }, [repo, repoName, startAnalysis]);
-
-  // Kick off extraction once
+  // Kick off fake analysis: brief "cloning" phase, then start animation
   useEffect(() => {
     if (startedRef.current) return;
     startedRef.current = true;
-    extract();
-  }, [extract]);
+
+    if (!demoRepo) {
+      setExtractError("Unknown repository. Please go back and select one.");
+      return;
+    }
+
+    // Simulate a brief "cloning" phase, then start fake analysis
+    const timer = setTimeout(() => {
+      setPhase("analyzing");
+      startAnalysis(demoSlug);
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, [demoRepo, demoSlug, startAnalysis]);
 
   // When analysis completes, play sound and start exit animation
   useEffect(() => {
@@ -89,22 +65,22 @@ function AnalyzePage() {
     setPhase("transitioning");
   }, [isComplete, phase, playSwoosh]);
 
-  // After transition animation completes, navigate to timeline using blob ID
+  // After transition animation completes, navigate to demo timeline
   useEffect(() => {
     if (phase !== "transitioning") return;
 
     const timer = setTimeout(() => {
       if (!timelineId) {
-        setExtractError("Analysis completed but no timeline events generated. Try a repo with more history.");
+        setExtractError("Something went wrong. Please try again.");
         setPhase("cloning");
         return;
       }
 
-      router.push(`/timeline/${timelineId}?repo=${encodeURIComponent(repoName)}`);
+      router.push(`/timeline/demo/${timelineId}`);
     }, 350);
 
     return () => clearTimeout(timer);
-  }, [phase, timelineId, repoName, router]);
+  }, [phase, timelineId, router]);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background">
@@ -117,36 +93,12 @@ function AnalyzePage() {
           role="alert"
         >
           <p className="text-16 text-red-400">{extractError}</p>
-          {extractError.includes("rate limit") && (
-            <p className="text-13 text-[color:var(--color-gray9)] max-w-sm">
-              GitHub limits API requests for public use. This resets automatically.
-            </p>
-          )}
-          <div className="flex items-center gap-4">
-            {extractError.includes("rate limit") && (
-              <button
-                onClick={() => {
-                  setExtractError(null);
-                  startedRef.current = false;
-                  setPhase("cloning");
-                  // Re-trigger extraction
-                  setTimeout(() => {
-                    startedRef.current = true;
-                    extract();
-                  }, 100);
-                }}
-                className="text-14 text-[color:var(--color-gray9)] underline underline-offset-4 hover:text-[color:var(--color-high-contrast)]"
-              >
-                Try again
-              </button>
-            )}
-            <Link
-              href="/"
-              className="text-14 text-[color:var(--color-gray9)] underline underline-offset-4 hover:text-[color:var(--color-high-contrast)]"
-            >
-              Go back
-            </Link>
-          </div>
+          <Link
+            href="/"
+            className="text-14 text-[color:var(--color-gray9)] underline underline-offset-4 hover:text-[color:var(--color-high-contrast)]"
+          >
+            Go back
+          </Link>
         </motion.div>
       )}
 

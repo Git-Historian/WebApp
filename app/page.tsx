@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { StaggeringText } from "@/components/shared/staggering-text";
 import { SiteHeader } from "@/components/shared/site-header";
 import { useSounds } from "@/components/shared/sound-provider";
+import { DEMO_REPOS } from "@/lib/timeline/demo-repos";
 
 function AnimatedLink({
   href,
@@ -44,40 +45,60 @@ function AnimatedLink({
 const steps = [
   {
     number: "01",
-    title: "Paste",
-    description: "Drop in any public GitHub repo URL",
+    title: "Select",
+    description: "Choose a repository from the curated collection",
   },
   {
     number: "02",
     title: "Analyze",
-    description: "Four AI agents extract the story from your git history",
+    description: "Watch four AI agents extract the story from git history",
   },
   {
     number: "03",
     title: "Explore",
     description:
-      "Navigate an interactive radial timeline of your project's evolution",
+      "Navigate an interactive radial timeline of the project\u2019s evolution",
   },
 ];
 
 export default function LandingPage() {
   const router = useRouter();
-  const { playSnap } = useSounds();
-  const [repoUrl, setRepoUrl] = useState("");
+  const { playSnap, playPop } = useSounds();
+  const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
   const [headlineRevealed, setHeadlineRevealed] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => setHeadlineRevealed(true), 400);
     return () => clearTimeout(timer);
   }, []);
 
-  function handleAnalyze(url?: string) {
-    const targetUrl = url || repoUrl;
-    if (!targetUrl.trim()) return;
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
+        setDropdownOpen(false);
+      }
+    }
+    if (dropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [dropdownOpen]);
+
+  const selectedRepo = DEMO_REPOS.find((r) => r.slug === selectedSlug);
+
+  function handleAnalyze() {
+    if (!selectedSlug) return;
     setIsNavigating(true);
     playSnap();
-    router.push(`/analyze?repo=${encodeURIComponent(targetUrl)}`);
+    router.push(`/analyze?demo=${encodeURIComponent(selectedSlug)}`);
   }
 
   return (
@@ -113,37 +134,120 @@ export default function LandingPage() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.5 }}
           >
-            Paste a GitHub repo and watch AI agents transform its git history
+            Select a repository and watch AI agents transform its git history
             into an interactive radial timeline documentary.
-            <span className="block mt-2 text-13 max-sm:text-12 text-[color:var(--color-gray8)]">
-              Accepts HTTPS, SSH, or just owner/repo — public repos only
-            </span>
           </motion.p>
 
-          {/* URL Input */}
-          <motion.form
+          {/* Repo selector + Analyze button */}
+          <motion.div
             className="flex flex-col sm:flex-row gap-3 w-full max-w-lg mx-auto mb-4"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.4 }}
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleAnalyze();
-            }}
           >
-            <input
-              type="url"
-              placeholder="https://github.com/owner/repo"
-              value={repoUrl}
-              onChange={(e) => setRepoUrl(e.target.value)}
-              className="w-full sm:flex-1 h-11 px-4 rounded-[10px] bg-[color:var(--card)] border border-[color:var(--border)] text-[color:var(--color-high-contrast)] placeholder:text-[color:var(--color-gray9)] font-mono text-[13px] sm:text-13 shadow-[var(--shadow-small)] transition-colors outline-none focus:border-[color:var(--theme-accent)] min-w-0"
-              aria-label="GitHub repository URL"
-              disabled={isNavigating}
-              autoComplete="url"
-            />
+            {/* Custom dropdown */}
+            <div className="relative w-full sm:flex-1" ref={dropdownRef}>
+              <button
+                type="button"
+                onClick={() => {
+                  setDropdownOpen((o) => !o);
+                  playPop();
+                }}
+                disabled={isNavigating}
+                className="w-full h-11 px-4 rounded-[10px] bg-[color:var(--card)] border border-[color:var(--border)] text-left font-mono text-[13px] sm:text-13 shadow-[var(--shadow-small)] transition-colors outline-none focus:border-[color:var(--theme-accent)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-between gap-2"
+                aria-haspopup="listbox"
+                aria-expanded={dropdownOpen}
+              >
+                <span
+                  className={
+                    selectedRepo
+                      ? "text-[color:var(--color-high-contrast)] truncate"
+                      : "text-[color:var(--color-gray9)] truncate"
+                  }
+                >
+                  {selectedRepo
+                    ? selectedRepo.label
+                    : "Select a repository\u2026"}
+                </span>
+                {/* Chevron */}
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 12 12"
+                  fill="none"
+                  className={`shrink-0 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`}
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M3 4.5L6 7.5L9 4.5"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="text-[color:var(--color-gray9)]"
+                  />
+                </svg>
+              </button>
+
+              <AnimatePresence>
+                {dropdownOpen && (
+                  <motion.ul
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4, transition: { duration: 0.12 } }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 400,
+                      damping: 28,
+                    }}
+                    className="absolute z-50 mt-2 w-full rounded-[10px] bg-[color:var(--card)] border border-[color:var(--border)] shadow-[var(--shadow-medium)] overflow-hidden"
+                    role="listbox"
+                    aria-label="Select a repository"
+                  >
+                    {DEMO_REPOS.map((repo) => (
+                      <li
+                        key={repo.slug}
+                        role="option"
+                        aria-selected={selectedSlug === repo.slug}
+                        onClick={() => {
+                          setSelectedSlug(repo.slug);
+                          setDropdownOpen(false);
+                          playSnap();
+                        }}
+                        className={`px-4 py-3 cursor-pointer transition-colors ${
+                          selectedSlug === repo.slug
+                            ? "bg-[color:var(--theme-accent)]/10"
+                            : "hover:bg-[color:var(--hover-row,transparent)]"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <span
+                            className={`text-13 font-medium ${
+                              selectedSlug === repo.slug
+                                ? "text-[color:var(--theme-accent)]"
+                                : "text-[color:var(--color-high-contrast)]"
+                            }`}
+                          >
+                            {repo.label}
+                          </span>
+                          <span className="text-12 font-mono text-[color:var(--color-gray8)] shrink-0">
+                            {repo.repoName}
+                          </span>
+                        </div>
+                        <p className="text-12 text-[color:var(--color-gray9)] mt-0.5">
+                          {repo.description}
+                        </p>
+                      </li>
+                    ))}
+                  </motion.ul>
+                )}
+              </AnimatePresence>
+            </div>
+
             <motion.button
-              type="submit"
-              disabled={!repoUrl.trim() || isNavigating}
+              type="button"
+              onClick={handleAnalyze}
+              disabled={!selectedSlug || isNavigating}
               className="w-full sm:w-auto h-11 px-6 rounded-[10px] bg-[color:var(--card)] border border-[color:var(--border)] text-[color:var(--color-high-contrast)] font-semibold text-13 cursor-pointer shadow-[var(--shadow-small)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors hover:border-[color:var(--theme-accent)] hover:text-[color:var(--theme-accent)] hover:bg-[color:var(--hover-row,transparent)]"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.97 }}
@@ -151,7 +255,7 @@ export default function LandingPage() {
             >
               Analyze
             </motion.button>
-          </motion.form>
+          </motion.div>
 
         </motion.div>
 
@@ -194,10 +298,9 @@ export default function LandingPage() {
         >
           <p className="text-12 text-[color:var(--color-gray9)] leading-20 text-center">
             <span className="text-[color:var(--color-gray11)] font-medium">A proof of concept.</span>{" "}
-            Git Historian analyzes the latest 200 commits of any public GitHub repository.
-            It&apos;s a demonstration of how AI agents can transform git history into narrative
-            documentation, not a production tool for massive codebases. Think of it as a theory
-            on what&apos;s possible.
+            These are pre-analyzed timelines demonstrating how AI agents can
+            transform git history into narrative documentation. The full version
+            analyzes any public GitHub repository in real-time.
           </p>
         </motion.div>
       </main>
