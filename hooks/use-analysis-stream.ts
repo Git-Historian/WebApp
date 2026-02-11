@@ -3,7 +3,6 @@
 import { useCallback, useRef, useState } from "react";
 import type { AgentName, AgentStatus, AnalysisEvent } from "@/lib/ai/types";
 import type { RawCommit } from "@/lib/git/types";
-import type { TimelineEvent } from "@/lib/timeline/types";
 
 const AGENT_NAMES: AgentName[] = [
   "commit-analyst",
@@ -23,17 +22,16 @@ function initialAgentStatuses(): AgentStatus[] {
 export interface AnalysisStreamState {
   agents: AgentStatus[];
   isComplete: boolean;
-  timelineData: TimelineEvent[] | null;
+  /** Blob ID for the saved timeline (set when pipeline completes) */
+  timelineId: string | null;
   error: string | null;
-  startAnalysis: (commits: RawCommit[]) => void;
+  startAnalysis: (commits: RawCommit[], repoName: string, repoUrl: string) => void;
 }
 
 export function useAnalysisStream(): AnalysisStreamState {
   const [agents, setAgents] = useState<AgentStatus[]>(initialAgentStatuses);
   const [isComplete, setIsComplete] = useState(false);
-  const [timelineData, setTimelineData] = useState<TimelineEvent[] | null>(
-    null
-  );
+  const [timelineId, setTimelineId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -89,10 +87,15 @@ export function useAnalysisStream(): AnalysisStreamState {
           }
           break;
 
-        case "pipeline_complete":
-          setTimelineData((data.timeline as TimelineEvent[]) ?? null);
+        case "pipeline_complete": {
+          // Server saves timeline to blob and sends the ID
+          const id = data.timelineId as string | null;
+          if (id) {
+            setTimelineId(id);
+          }
           setIsComplete(true);
           break;
+        }
 
         case "error":
           if (agent) {
@@ -110,7 +113,7 @@ export function useAnalysisStream(): AnalysisStreamState {
   );
 
   const startAnalysis = useCallback(
-    async (commits: RawCommit[]) => {
+    async (commits: RawCommit[], repoName: string, repoUrl: string) => {
       // Reset state
       abortRef.current?.abort();
       const controller = new AbortController();
@@ -118,7 +121,7 @@ export function useAnalysisStream(): AnalysisStreamState {
 
       setAgents(initialAgentStatuses());
       setIsComplete(false);
-      setTimelineData(null);
+      setTimelineId(null);
       setError(null);
 
       // Trim payload: cap commits and files per commit to avoid exceeding body limits
@@ -135,7 +138,11 @@ export function useAnalysisStream(): AnalysisStreamState {
         const response = await fetch("/api/analyze", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ commits: trimmedCommits }),
+          body: JSON.stringify({
+            commits: trimmedCommits,
+            repoName,
+            repoUrl,
+          }),
           signal: controller.signal,
         });
 
@@ -193,5 +200,5 @@ export function useAnalysisStream(): AnalysisStreamState {
     [handleEvent]
   );
 
-  return { agents, isComplete, timelineData, error, startAnalysis };
+  return { agents, isComplete, timelineId, error, startAnalysis };
 }

@@ -28,15 +28,13 @@ function AnalyzePage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const repo = searchParams.get("repo") ?? "";
-  const { agents, isComplete, timelineData, error, startAnalysis } =
+  const { agents, isComplete, timelineId, error, startAnalysis } =
     useAnalysisStream();
   const { playSwoosh } = useSounds();
 
   const [phase, setPhase] = useState<Phase>("cloning");
   const [extractError, setExtractError] = useState<string | null>(null);
   const startedRef = useRef(false);
-  const timelineDataRef = useRef(timelineData);
-  timelineDataRef.current = timelineData;
 
   const repoName = repo.replace(/^https?:\/\/(www\.)?github\.com\//, "").replace(/\.git$/, "");
 
@@ -69,13 +67,13 @@ function AnalyzePage() {
       }
 
       setPhase("analyzing");
-      startAnalysis(commits);
+      startAnalysis(commits, repoName, repo);
     } catch (err: unknown) {
       setExtractError(
         err instanceof Error ? err.message : "Failed to extract repository"
       );
     }
-  }, [repo, startAnalysis]);
+  }, [repo, repoName, startAnalysis]);
 
   // Kick off extraction once
   useEffect(() => {
@@ -91,46 +89,22 @@ function AnalyzePage() {
     setPhase("transitioning");
   }, [isComplete, phase, playSwoosh]);
 
-  // After transition animation completes, save to blob and navigate to timeline
+  // After transition animation completes, navigate to timeline using blob ID
   useEffect(() => {
     if (phase !== "transitioning") return;
 
-    const timer = setTimeout(async () => {
-      const data = timelineDataRef.current;
-      if (!data || data.length === 0) {
+    const timer = setTimeout(() => {
+      if (!timelineId) {
         setExtractError("Analysis completed but no timeline events generated. Try a repo with more history.");
         setPhase("cloning");
         return;
       }
 
-      try {
-        const res = await fetch("/api/timelines", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ repoName, repoUrl: repo, timeline: data }),
-        });
-
-        if (res.ok) {
-          const { id } = (await res.json()) as { id: string };
-          router.push(`/timeline/${id}?repo=${encodeURIComponent(repoName)}`);
-          return;
-        }
-      } catch {
-        // Blob save failed — fall through to sessionStorage
-      }
-
-      // Fallback: sessionStorage path
-      try {
-        sessionStorage.setItem("git-historian-timeline", JSON.stringify(data));
-      } catch {
-        // sessionStorage may be full or unavailable
-      }
-
-      router.push(`/timeline?repo=${encodeURIComponent(repoName)}`);
+      router.push(`/timeline/${timelineId}?repo=${encodeURIComponent(repoName)}`);
     }, 350);
 
     return () => clearTimeout(timer);
-  }, [phase, repoName, repo, router]);
+  }, [phase, timelineId, repoName, router]);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background">
