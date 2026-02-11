@@ -154,7 +154,7 @@ export default function LandingPage() {
                   playPop();
                 }}
                 disabled={isNavigating}
-                className="w-full h-11 px-4 rounded-[10px] bg-[color:var(--card)] border border-[color:var(--border)] text-left font-mono text-[13px] sm:text-13 shadow-[var(--shadow-small)] transition-colors outline-none focus:border-[color:var(--theme-accent)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-between gap-2"
+                className="w-full h-11 px-4 rounded-[10px] bg-[color:var(--card)] border border-[color:var(--border)] text-left font-mono text-[13px] sm:text-13 shadow-[var(--shadow-small)] transition-colors outline-none focus:border-[color:var(--theme-accent)] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-between gap-2"
                 aria-haspopup="listbox"
                 aria-expanded={dropdownOpen}
               >
