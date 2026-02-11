@@ -591,23 +591,23 @@ const LUMA_RAW: TimelineData = [
 export const DEMO_REPOS: DemoRepo[] = [
   {
     slug: "edwardguillen-portfolio",
-    label: "Edward\u2019s Portfolio",
-    repoName: "helloluma/edwardguillen",
-    description: "Personal design portfolio \u2014 Vite + React",
+    label: "Edward Guillen",
+    repoName: "Edward Guillen",
+    description: "Personal design portfolio",
     timeline: transformData([...PORTFOLIO_RAW]),
   },
   {
     slug: "sponsorbase",
     label: "SponsorBase",
-    repoName: "SponsorBase/Web-App",
-    description: "Sponsorship matching platform \u2014 Next.js + Supabase",
+    repoName: "SponsorBase",
+    description: "Sponsorship matching platform",
     timeline: transformData([...SPONSORBASE_RAW]),
   },
   {
     slug: "luma-design-system",
     label: "Luma",
-    repoName: "Luma-Comply/Web-App",
-    description: "Enterprise design system \u2014 React + Tokens",
+    repoName: "Luma",
+    description: "Enterprise design system",
     timeline: transformData([...LUMA_RAW]),
   },
 ];
