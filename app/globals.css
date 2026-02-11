@@ -33,6 +33,7 @@
 
   /* Font size */
   --text-10: 0.625rem;
+  --text-11: 0.6875rem;
   --text-12: 0.75rem;
   --text-13: 0.8125rem;
   --text-14: 0.875rem;
@@ -73,7 +74,7 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 
-  /* Shadows — adaptive per theme */
+  /* Shadows: adaptive per theme */
   --shadow-border-color: var(--theme-shadow-border-color);
   --shadow-border: 0 0 0 1px var(--shadow-border-color);
   --shadow-small: var(--theme-shadow-sm);
@@ -88,13 +89,13 @@
     0px 8px 16px -4px rgba(0, 0, 0, 0.04),
     0px 24px 32px -8px rgba(0, 0, 0, 0.06);
 
-  /* Brand accent — periwinkle blue */
+  /* Brand accent: periwinkle blue */
   --color-accent: var(--theme-accent);
   --color-accent-bg: var(--theme-accent-subtle);
   --color-accent-bg2: var(--theme-accent-bg2);
   --color-accent-bg3: var(--theme-accent-bg3);
 
-  /* Gray scale — cool blue-gray */
+  /* Gray scale: cool blue-gray */
   --color-high-contrast: var(--theme-high-contrast);
   --color-low-contrast: var(--theme-low-contrast);
   --color-bg: var(--color-gray1);
@@ -149,7 +150,7 @@
 }
 
 /* ═══════════════════════════════════════
-   LIGHT MODE — Cool Paper
+   LIGHT MODE: Cool Paper
    ═══════════════════════════════════════ */
 :root {
   --radius: 0.625rem;
@@ -176,7 +177,7 @@
   --ring: #4d6ef5;
   --hit-area-color: transparent;
 
-  /* Theme tokens — Cool Paper */
+  /* Theme tokens: Cool Paper */
   --theme-accent: #4d6ef5;
   --theme-accent-subtle: rgba(77, 110, 245, 0.1);
   --theme-accent-bg2: rgba(77, 110, 245, 0.58);
@@ -202,7 +203,7 @@
 }
 
 /* ═══════════════════════════════════════
-   DARK MODE — Cold Obsidian
+   DARK MODE: Cold Obsidian
    ═══════════════════════════════════════ */
 .dark {
   color-scheme: dark;
@@ -228,7 +229,7 @@
   --ring: #6b8aff;
   --hit-area-color: transparent;
 
-  /* Theme tokens — Cold Obsidian */
+  /* Theme tokens: Cold Obsidian */
   --theme-accent: #6b8aff;
   --theme-accent-subtle: rgba(107, 138, 255, 0.12);
   --theme-accent-bg2: rgba(107, 138, 255, 0.58);
@@ -294,7 +295,7 @@
   }
 }
 
-/* Reduced motion — disable animations for vestibular disorder users */
+/* Reduced motion: disable animations for vestibular disorder users */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

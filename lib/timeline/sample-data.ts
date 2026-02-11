@@ -148,7 +148,7 @@ const RAW_SAMPLE_DATA: TimelineData = [
     variant: "large",
     title: "Web Audio API sound effects system",
     narrative:
-      "A comprehensive sound system was added using the Web Audio API. No audio files — everything synthesized at runtime using oscillators and filtered noise. Subtle clicks, swooshes, and pops gave the interface tactile feedback.",
+      "A comprehensive sound system was added using the Web Audio API. No audio files, everything synthesized at runtime using oscillators and filtered noise. Subtle clicks, swooshes, and pops gave the interface tactile feedback.",
     category: "interaction",
     architectureNote:
       "Pure Web Audio API implementation in src/utils/sounds.js. Zero audio file dependencies.",
@@ -222,7 +222,7 @@ const RAW_SAMPLE_DATA: TimelineData = [
     variant: "large",
     title: "AI-powered design direction tool",
     narrative:
-      "The most technically ambitious case study — an AI-powered tool that helps designers find their creative direction. This marked the portfolio's evolution from static showcase to interactive product demonstrations.",
+      "The most technically ambitious case study: an AI-powered tool that helps designers find their creative direction. This marked the portfolio's evolution from static showcase to interactive product demonstrations.",
     category: "feature",
   },
 ];

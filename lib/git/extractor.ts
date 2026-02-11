@@ -53,7 +53,7 @@ function githubHeaders(skipAuth = false): Record<string, string> {
 
 /**
  * Fetch commits from the GitHub REST API.
- * No git binary required — works on Vercel serverless.
+ * No git binary required. Works on Vercel serverless.
  */
 export async function extractCommits(url: string): Promise<RawCommit[]> {
   const extractStart = Date.now();
@@ -94,7 +94,7 @@ export async function extractCommits(url: string): Promise<RawCommit[]> {
           );
         }
 
-        // 403 but NOT rate limit — likely org policy blocking the token
+        // 403 but NOT rate limit, likely org policy blocking the token
         // Retry without auth (public repos work unauthenticated)
         if (!skipAuth && process.env.GITHUB_TOKEN) {
           console.warn(`[extract] Token rejected for ${owner}/${repo}, retrying without auth`);
@@ -144,7 +144,7 @@ export async function extractCommits(url: string): Promise<RawCommit[]> {
   }
 
   // Fetch diff stats for each commit (in parallel, batched)
-  // Stop early if we hit a rate limit — partial stats are better than failing entirely
+  // Stop early if we hit a rate limit. Partial stats are better than failing entirely
   const BATCH_SIZE = 10;
   let rateLimitHit = false;
   for (let i = 0; i < allCommits.length && !rateLimitHit; i += BATCH_SIZE) {
@@ -208,15 +208,15 @@ export async function extractCommits(url: string): Promise<RawCommit[]> {
 }
 
 /**
- * No-op cleanup — no temp files when using GitHub API.
+ * No-op cleanup: no temp files when using GitHub API.
  */
 export async function cleanup(_repoPath: string): Promise<void> {
   // Nothing to clean up when using GitHub API
 }
 
 /**
- * @deprecated No longer needed — extractCommits fetches directly from GitHub API.
+ * @deprecated No longer needed. extractCommits fetches directly from GitHub API.
  */
 export async function cloneRepo(url: string): Promise<string> {
-  return url; // Return URL as the "repo path" — extractCommits uses it directly
+  return url; // Return URL as the "repo path". extractCommits uses it directly
 }

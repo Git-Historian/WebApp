@@ -151,7 +151,7 @@ function repairTruncatedJson(json: string): string {
     }
   }
 
-  // Strategy 3: Brute force — count unclosed brackets and close them
+  // Strategy 3: Brute force. Count unclosed brackets and close them
   let openBraces = 0;
   let openBrackets = 0;
   let inString = false;
@@ -207,7 +207,7 @@ async function callClaude<T>(
     throw new Error("No text response from Claude");
   }
 
-  // Extract JSON from the response — handle markdown code fences
+  // Extract JSON from the response. Handle markdown code fences
   let jsonStr = textBlock.text.trim();
   const fenceMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
   if (fenceMatch) {
@@ -264,7 +264,7 @@ Return ONLY a JSON array of objects with these fields:
 - milestoneGroup: string or null (group related commits into named milestones like "Authentication System", "API v2 Migration", etc.)
 
 The array must have exactly ${commits.length} items, one per commit in order.
-Focus on identifying meaningful milestones — group commits that contribute to the same goal.
+Focus on identifying meaningful milestones. Group commits that contribute to the same goal.
 Return ONLY valid JSON, no explanation.`;
 
   const userPrompt = `Analyze these ${commits.length} commits:\n\n${formatCommitsForPrompt(commits)}`;
@@ -320,10 +320,10 @@ Return ONLY a JSON array of complexity snapshots at regular intervals through th
 - totalFiles: number (estimated cumulative file count at this point)
 - totalLines: number (estimated cumulative line count)
 - growthRate: number (lines added per day in this period, 0-1000)
-- healthScore: number (0-100, where 100 is healthiest — considers refactoring, test coverage signals, code churn)
+- healthScore: number (0-100, where 100 is healthiest, considers refactoring, test coverage signals, code churn)
 - refactoringRatio: number (0-1, ratio of deletion/modification commits vs pure additions in this period)
 
-Create snapshots at meaningful intervals — roughly one per 10-20% of the project timeline.
+Create snapshots at meaningful intervals, roughly one per 10-20% of the project timeline.
 Aim for 5-10 snapshots total.
 Return ONLY valid JSON, no explanation.`;
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import type { AgentStatus } from "@/lib/ai/types";
 import { AgentPanel } from "./agent-panel";
 import { SiteHeader } from "@/components/shared/site-header";
@@ -20,7 +20,7 @@ function OverallProgress({
   isCloning?: boolean;
 }) {
   const total = agents.reduce((sum, a) => sum + a.progress, 0);
-  const percent = isCloning ? 0 : Math.round(total / agents.length);
+  const percent = isCloning ? 5 : Math.round(total / agents.length);
 
   // Find currently active agent for label
   const activeAgent = agents.find(
@@ -68,7 +68,7 @@ function OverallProgress({
         )}
       </div>
       <div className="h-1.5 w-full overflow-hidden rounded-full bg-[color:var(--color-gray4)] relative">
-        {/* Indeterminate pulse while cloning — sits behind the fill */}
+        {/* Indeterminate pulse while cloning, sits behind the fill */}
         {isCloning && (
           <div
             className="absolute inset-0 animate-[track-pulse_1.5s_ease-in-out_infinite]"
@@ -78,7 +78,7 @@ function OverallProgress({
             }}
           />
         )}
-        {/* Determinate fill — grows from 0 */}
+        {/* Determinate fill: grows from 0 */}
         {percent > 0 && (
           <div
             className="h-full rounded-full relative overflow-hidden"
@@ -143,27 +143,23 @@ export function AgentGrid({
           </motion.div>
         )}
 
-        {/* 2x2 Grid — appears after cloning finishes */}
-        <AnimatePresence>
-          {!isCloning && (
-            <motion.div
-              initial={{ opacity: 0, y: 30, scale: 0.97 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{
-                type: "spring",
-                stiffness: 120,
-                damping: 18,
-                mass: 0.8,
-                staggerChildren: 0.08,
-              }}
-              className="grid grid-cols-1 gap-4 sm:grid-cols-2"
-            >
-              {agents.map((agent, i) => (
-                <AgentPanel key={agent.name} agent={agent} index={i} />
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* 2x2 Grid: always visible */}
+        <motion.div
+          initial={{ opacity: 0, y: 30, scale: 0.97 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{
+            type: "spring",
+            stiffness: 120,
+            damping: 18,
+            mass: 0.8,
+            staggerChildren: 0.08,
+          }}
+          className="grid grid-cols-1 gap-4 sm:grid-cols-2"
+        >
+          {agents.map((agent, i) => (
+            <AgentPanel key={agent.name} agent={agent} index={i} />
+          ))}
+        </motion.div>
       </div>
     </div>
   );

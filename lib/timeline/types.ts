@@ -11,6 +11,7 @@ export interface TimelineEvent {
   complexityDelta?: number;
   category?: string;
   dateRange?: string;
+  image?: string;
 }
 
 export interface TimelineCommit {

@@ -26,7 +26,7 @@ try {
     }
   }
 } catch {
-  // .env.local may not exist in CI/production — that's fine
+  // .env.local may not exist in CI/production, that's fine
 }
 
 const nextConfig: NextConfig = {

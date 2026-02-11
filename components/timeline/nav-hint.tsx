@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { AnimatePresence, motion } from "motion/react";
 
 /*──────────────────────────────────────────────────────────────────────────────
-  Git Historian — Navigation Dock
+  Git Historian - Navigation Dock
   Morphing surface: compact pill → two-row keyboard shortcut legend.
   Built on Rauno Freiberg's Morph Surface spring pattern.
 ──────────────────────────────────────────────────────────────────────────────*/

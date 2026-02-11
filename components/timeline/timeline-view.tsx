@@ -4,15 +4,20 @@ import { motion } from "motion/react";
 import RadialTimeline from "@/components/timeline/radial-timeline";
 import { SiteHeader } from "@/components/shared/site-header";
 import { NavHint } from "@/components/timeline/nav-hint";
+import { ProjectNav } from "@/components/timeline/project-nav";
 import type { TimelineEvent } from "@/lib/timeline/types";
 
 interface TimelineViewProps {
   data: TimelineEvent[];
   repoName?: string;
   timelineId?: string;
+  adjacentProjects?: {
+    prev: { slug: string; label: string } | null;
+    next: { slug: string; label: string } | null;
+  };
 }
 
-export function TimelineView({ data, repoName, timelineId }: TimelineViewProps) {
+export function TimelineView({ data, repoName, timelineId, adjacentProjects }: TimelineViewProps) {
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -30,6 +35,9 @@ export function TimelineView({ data, repoName, timelineId }: TimelineViewProps) 
 
       <RadialTimeline data={data} />
       <NavHint />
+      {adjacentProjects && (
+        <ProjectNav prev={adjacentProjects.prev} next={adjacentProjects.next} />
+      )}
     </motion.div>
   );
 }

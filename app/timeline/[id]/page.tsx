@@ -12,20 +12,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const stored = await loadTimeline(id);
 
   if (!stored) {
-    return { title: "Timeline not found — Git Historian" };
+    return { title: "Timeline not found | Git Historian" };
   }
 
   return {
-    title: `${stored.repoName} — Git Historian`,
+    title: `${stored.repoName} | Git Historian`,
     description: `A visual timeline of ${stored.repoName} with ${stored.eventCount} key moments in its history.`,
     openGraph: {
-      title: `${stored.repoName} — Git Historian`,
+      title: `${stored.repoName} | Git Historian`,
       description: `A visual timeline of ${stored.repoName} with ${stored.eventCount} key moments in its history.`,
       type: "website",
     },
     twitter: {
       card: "summary",
-      title: `${stored.repoName} — Git Historian`,
+      title: `${stored.repoName} | Git Historian`,
       description: `A visual timeline of ${stored.repoName} with ${stored.eventCount} key moments in its history.`,
     },
   };

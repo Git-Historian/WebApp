@@ -140,13 +140,13 @@ export default function LandingPage() {
 
           {/* Repo selector + Analyze button */}
           <motion.div
-            className="flex flex-col sm:flex-row gap-3 w-full max-w-lg mx-auto mb-4"
+            className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full mx-auto mb-4"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.4 }}
           >
             {/* Custom dropdown */}
-            <div className="relative w-full sm:flex-1" ref={dropdownRef}>
+            <div className="relative w-auto" ref={dropdownRef}>
               <button
                 type="button"
                 onClick={() => {
@@ -154,7 +154,7 @@ export default function LandingPage() {
                   playPop();
                 }}
                 disabled={isNavigating}
-                className="w-full h-11 px-4 rounded-[10px] bg-[color:var(--card)] border border-[color:var(--border)] text-left font-mono text-[13px] sm:text-13 shadow-[var(--shadow-small)] transition-colors outline-none focus:border-[color:var(--theme-accent)] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-between gap-2"
+                className="w-[220px] h-11 px-4 rounded-[10px] bg-[color:var(--card)] border border-[color:var(--border)] text-left font-mono text-[13px] sm:text-13 shadow-[var(--shadow-small)] transition-colors outline-none focus:border-[color:var(--theme-accent)] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-between gap-2"
                 aria-haspopup="listbox"
                 aria-expanded={dropdownOpen}
               >
@@ -200,7 +200,7 @@ export default function LandingPage() {
                       stiffness: 400,
                       damping: 28,
                     }}
-                    className="absolute z-50 mt-2 w-full rounded-[10px] bg-[color:var(--card)] border border-[color:var(--border)] shadow-[var(--shadow-medium)] overflow-hidden"
+                    className="absolute left-0 z-50 mt-2 w-auto rounded-[10px] bg-[color:var(--card)] border border-[color:var(--border)] shadow-[var(--shadow-medium)] overflow-hidden"
                     role="listbox"
                     aria-label="Select a repository"
                   >
@@ -216,23 +216,30 @@ export default function LandingPage() {
                         }}
                         className={`px-4 py-3 cursor-pointer transition-colors ${
                           selectedSlug === repo.slug
-                            ? "bg-[color:var(--theme-accent)]/10"
-                            : "hover:bg-[color:var(--hover-row,transparent)]"
+                            ? "bg-[color:var(--theme-accent-subtle)]"
+                            : "hover:bg-white/[0.04]"
                         }`}
                       >
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={`text-13 font-medium ${
-                              selectedSlug === repo.slug
-                                ? "text-[color:var(--theme-accent)]"
-                                : "text-[color:var(--color-high-contrast)]"
-                            }`}
-                          >
-                            {repo.label}
-                          </span>
-                          <span className="text-12 text-[color:var(--color-gray9)]">
-                            {repo.description}
-                          </span>
+                        <div className="flex items-center justify-between gap-3 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`text-13 font-medium transition-colors ${
+                                selectedSlug === repo.slug
+                                  ? "text-[color:var(--theme-accent)]"
+                                  : "text-[color:var(--color-gray11)]"
+                              }`}
+                            >
+                              {repo.label}
+                            </span>
+                            <span className="text-12 text-[color:var(--color-gray9)]">
+                              {repo.description}
+                            </span>
+                          </div>
+                          {selectedSlug === repo.slug && (
+                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="shrink-0" aria-hidden="true">
+                              <path d="M2.5 7.5L5.5 10.5L11.5 3.5" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                          )}
                         </div>
                       </li>
                     ))}
@@ -274,7 +281,7 @@ export default function LandingPage() {
               transition={{ delay: 1 + index * 0.1, duration: 0.4 }}
               role="listitem"
             >
-              <span className="text-12 font-mono text-[color:var(--theme-accent)] mb-2 block" aria-hidden="true">
+              <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[color:var(--theme-accent)]/10 text-12 font-mono text-[color:var(--theme-accent)] mb-3" aria-hidden="true">
                 {step.number}
               </span>
               <h3 className="text-18 font-medium text-[color:var(--color-high-contrast)] mb-1">
@@ -295,9 +302,10 @@ export default function LandingPage() {
         >
           <p className="text-12 text-[color:var(--color-gray9)] leading-20 text-center">
             <span className="text-[color:var(--color-gray11)] font-medium">A proof of concept.</span>{" "}
-            These are pre-analyzed timelines demonstrating how AI agents can
-            transform git history into narrative documentation. The full version
-            analyzes any public GitHub repository in real-time.
+            This demo showcases how AI agents can transform any public GitHub
+            repository&apos;s git history into an interactive narrative timeline.
+            Currently optimized for select repositories due to API rate limits
+            in the hosted environment.
           </p>
         </motion.div>
       </main>

@@ -7,14 +7,14 @@ import "./globals.css";
 export const metadataBase = new URL("https://githistorian.com");
 
 export const metadata: Metadata = {
-  title: "Git Historian — Every codebase has a story",
+  title: "Git Historian | Every codebase has a story",
   description:
     "AI-narrated interactive timeline documentary of how your codebase evolved. Paste a repo URL and explore its history.",
   icons: {
     icon: "/icon.svg",
   },
   openGraph: {
-    title: "Git Historian — Every codebase has a story",
+    title: "Git Historian | Every codebase has a story",
     description:
       "AI-narrated interactive timeline documentary of how your codebase evolved. Paste a repo URL and explore its history.",
     type: "website",
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary",
-    title: "Git Historian — Every codebase has a story",
+    title: "Git Historian | Every codebase has a story",
     description:
       "AI-narrated interactive timeline documentary of how your codebase evolved. Paste a repo URL and explore its history.",
   },

@@ -34,6 +34,8 @@ function AnalyzePage() {
   const { agents, isComplete, timelineId, error, startAnalysis } =
     useFakeAnalysis();
   const { playSwoosh } = useSounds();
+  const startAnalysisRef = useRef(startAnalysis);
+  startAnalysisRef.current = startAnalysis;
 
   const [phase, setPhase] = useState<Phase>("cloning");
   const [extractError, setExtractError] = useState<string | null>(null);
@@ -49,14 +51,19 @@ function AnalyzePage() {
       return;
     }
 
-    // Simulate a brief "cloning" phase, then start fake analysis
+    // Simulate a "cloning" phase, then start fake analysis
     const timer = setTimeout(() => {
       setPhase("analyzing");
-      startAnalysis(demoSlug);
-    }, 800);
+      startAnalysisRef.current(demoSlug);
+    }, 2000);
 
-    return () => clearTimeout(timer);
-  }, [demoRepo, demoSlug, startAnalysis]);
+    return () => {
+      clearTimeout(timer);
+      // Reset so StrictMode re-mount can restart the flow
+      startedRef.current = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [demoRepo, demoSlug]);
 
   // When analysis completes, play sound and start exit animation
   useEffect(() => {
@@ -102,7 +109,7 @@ function AnalyzePage() {
         </motion.div>
       )}
 
-      {/* Main layout — always show AgentGrid */}
+      {/* Main layout: always show AgentGrid */}
       {!extractError && (
         <motion.div
           animate={

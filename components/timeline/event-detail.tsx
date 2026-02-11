@@ -63,6 +63,17 @@ export function EventDetail({ event }: { event: TimelineEvent }) {
 
   return (
     <div className="text-[color:var(--color-gray12)] text-15 leading-28 flex flex-col gap-6 w-full">
+      {/* Hero image */}
+      {event.image && (
+        <div className="w-full overflow-hidden rounded-8 -mt-1">
+          <img
+            src={event.image}
+            alt={event.title}
+            className="w-full h-auto object-cover"
+          />
+        </div>
+      )}
+
       {/* Title + category */}
       <div className="flex items-center gap-3">
         <h2 className="text-24 font-semibold flex-1 -tracking-[0.02em] text-[color:var(--color-high-contrast)]">

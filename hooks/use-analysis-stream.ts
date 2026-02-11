@@ -188,7 +188,7 @@ export function useAnalysisStream(): AnalysisStreamState {
 
         // Detect premature stream closure
         if (!receivedComplete) {
-          setError("Analysis stream ended unexpectedly. The server may have timed out — please try a smaller repository.");
+          setError("Analysis stream ended unexpectedly. The server may have timed out. Please try a smaller repository.");
         }
       } catch (err: unknown) {
         if ((err as Error).name === "AbortError") return;

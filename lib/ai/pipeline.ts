@@ -69,7 +69,7 @@ export async function runPipeline(
   const complexitySnapshots: ComplexitySnapshot[] =
     complexityResult.status === "fulfilled" ? complexityResult.value : [];
 
-  console.log(`[pipeline] Agent results — commitAnalysis: ${commitAnalysis.length}, archEvents: ${architectureEvents.length}, complexity: ${complexitySnapshots.length}`);
+  console.log(`[pipeline] Agent results: commitAnalysis: ${commitAnalysis.length}, archEvents: ${architectureEvents.length}, complexity: ${complexitySnapshots.length}`);
   console.log(`[pipeline] commitResult status: ${commitResult.status}${commitResult.status === 'rejected' ? `, reason: ${commitResult.reason}` : ''}`);
   console.log(`[pipeline] archResult status: ${archResult.status}${archResult.status === 'rejected' ? `, reason: ${archResult.reason}` : ''}`);
   console.log(`[pipeline] complexityResult status: ${complexityResult.status}${complexityResult.status === 'rejected' ? `, reason: ${complexityResult.reason}` : ''}`);
@@ -140,7 +140,7 @@ export async function runPipeline(
   // Debug: log what the narrative writer actually returned
   if (narratives.length > 0) {
     const firstNarrative = narratives[0];
-    console.log(`[pipeline] Narrative sample — era: "${firstNarrative.eraTitle}", milestoneStories keys: ${firstNarrative.milestoneStories ? Object.keys(firstNarrative.milestoneStories).join(', ') : 'NONE'}, commitStories keys: ${firstNarrative.commitStories ? Object.keys(firstNarrative.commitStories).length + ' hashes' : 'NONE'}`);
+    console.log(`[pipeline] Narrative sample: era: "${firstNarrative.eraTitle}", milestoneStories keys: ${firstNarrative.milestoneStories ? Object.keys(firstNarrative.milestoneStories).join(', ') : 'NONE'}, commitStories keys: ${firstNarrative.commitStories ? Object.keys(firstNarrative.commitStories).length + ' hashes' : 'NONE'}`);
     // Log all milestoneStories keys across all narratives
     const allMSKeys = narratives.flatMap(n => n.milestoneStories ? Object.keys(n.milestoneStories) : []);
     console.log(`[pipeline] All milestoneStories keys (${allMSKeys.length}): ${allMSKeys.slice(0, 10).join(', ')}${allMSKeys.length > 10 ? '...' : ''}`);
@@ -162,7 +162,7 @@ export async function runPipeline(
   console.log(`[pipeline] Built ${timeline.length} timeline events, degrees: [${timeline.map(e => e.degree).join(', ')}]`);
   console.log(`[pipeline] Total pipeline time: ${Date.now() - pipelineStart}ms`);
 
-  // Only send timeline in the SSE event — full pipelineResult is too large for a single SSE line
+  // Only send timeline in the SSE event. Full pipelineResult is too large for a single SSE line
   emit(onEvent, {
     type: "pipeline_complete",
     data: { timeline },
@@ -216,7 +216,7 @@ function buildTimeline(
       group.commits.some((c) => c.hash === e.commitHash)
     );
 
-    // Find matching narrative — first try milestoneStories (exact key), then era story fallback
+    // Find matching narrative: first try milestoneStories (exact key), then era story fallback
     const milestoneNarrative = findMilestoneStory(name, narratives);
     // If no milestoneStory, fall back to the era story from date-range matching
     const eraStory = !milestoneNarrative

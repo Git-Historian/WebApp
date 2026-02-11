@@ -42,4 +42,10 @@
     background: var(--highlight-color);
     color: var(--highlight-color);
   }
+
+  &[data-active="true"] {
+    background: transparent !important;
+    color: var(--color-accent);
+    overflow: visible;
+  }
 }

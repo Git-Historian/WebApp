@@ -90,6 +90,34 @@ export function Line({
     >
       {/* Forces Safari to render with GPU */}
       <div aria-hidden style={{ transform: "translateZ(0)" }} />
+      {/* Active line sweep overlay */}
+      {isInteractive && (
+        <motion.div
+          aria-hidden
+          initial={false}
+          animate={{
+            scaleX: active ? 1 : 0,
+            opacity: active ? 1 : 0,
+          }}
+          transition={{
+            scaleX: {
+              type: "spring",
+              stiffness: 300,
+              damping: 20,
+              mass: 0.6,
+            },
+            opacity: { duration: 0.15 },
+          }}
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 1,
+            background: "var(--color-accent)",
+            transformOrigin: "left center",
+            pointerEvents: "none",
+          }}
+        />
+      )}
       {currentItem?.name && currentItem?.year && (
         <Meta
           currentItem={currentItem}

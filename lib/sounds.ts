@@ -1,4 +1,4 @@
-// lib/sounds.ts — Pure Web Audio API, zero dependencies
+// lib/sounds.ts - Pure Web Audio API, zero dependencies
 
 let audioContext: AudioContext | null = null;
 
